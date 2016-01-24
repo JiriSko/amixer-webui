@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+# File:    /etc/init.d/amixer-webui
+# Date:    22. 1. 2015
+# Author:  Jiri Skorpil <jiri.sko@gmail.com>
+# Desc.:   init.d script for start/stop ALSA Mixer WebUI webserver
+#
+
+### BEGIN INIT INFO
+# Provides:          ALSA Mixer WebUI webserver
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: amixer-webui
+# Description:       ALSA Mixer WebUI webserver
+### END INIT INFO
+
+path=/home/pi/alsamixer-webui
+port= # if not set will be used default
+
+pid="`ps ax | grep alsamixer-webui | grep -v grep | awk '{print $1}'`"
+
+case "$1" in
+  start)
+    if [ "$pid" != "" ]
+    then
+      echo "alsamixer-webui already running"
+    else
+      $path/alsamixer-webui.py $port >/dev/null 2>&1 &
+      echo "alsamixer-webui started"
+    fi
+    ;;
+  stop)
+    if [ "$pid" != "" ]
+    then
+      sudo kill -9 $pid > /dev/null 2>&1
+      echo "alsamixer-webui stopped"
+    else
+      echo "alsamixer-webui is not running"
+    fi
+    ;;
+  status)
+    if [ "$pid" != "" ]
+    then
+      echo "alsamixer-webui is running"
+    else
+      echo "alsamixer-webui is not running"
+    fi
+    ;;
+  restart)
+    /etc/init.d/amixer-webui stop
+    /etc/init.d/amixer-webui start
+    ;;
+  *)
+    echo "Usage: /etc/init.d/alsamixer-webui {start|stop|restart|status}"
+    exit 1
+    ;;
+esac
+
+exit 0

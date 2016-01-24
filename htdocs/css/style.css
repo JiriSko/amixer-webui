@@ -1,0 +1,88 @@
+html, body {
+	background-color: #F5F5F5;
+}
+
+.amixer-webui-control {
+	padding-bottom: 0;
+}
+
+.amixer-webui-control > div {
+	width: 100%;
+}
+
+.amixer-webui-control > .amixer-webui-control__title {
+	display: flex;
+	background-color: #006064;
+	margin: -8px;
+	margin-bottom: 0px;
+	padding: 8px;
+	height: 28px;
+}
+
+.amixer-webui-control > .amixer-webui-control__title .amixer-webui-control__title-text {
+	font-size: 24px;
+	font-weight: 300;
+	line-height: normal;
+	padding: 0;
+    margin: 0;
+	color: white;
+	display: flex;
+}
+
+.amixer-webui-control > .amixer-webui-control__title .mdl-checkbox {
+	color: white;
+	white-space: nowrap;
+}
+
+.amixer-webui-control .mdl-checkbox__box-outline {
+	background-color: white;
+}
+
+.amixer-webui-control > .amixer-webui-control__actions {
+	padding: 8px;
+}
+
+.amixer-webui-control.off > .amixer-webui-control__actions {
+	opacity: .4;
+}
+
+.amixer-webui-control > .amixer-webui-control__actions .mdl-radio {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.amixer-webui-control .volumes {
+	display: flex;
+	margin: 4px;
+}
+
+.amixer-webui-control .volumes .channelDescription {
+	width: 120px;
+}
+
+.amixer-webui-control .volumes .mdl-slider__container {
+	width: 100%;
+}
+
+
+.amixer-webui-spinner {
+	display: none;
+	position: fixed;
+	z-index: 1000;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background-color: rgba(255, 255, 255, .8);
+}
+.amixer-webui-spinner > div {
+	left: 50%;
+	top: 50%;
+	margin-top: -28px;
+}
+body.loading {
+	overflow: hidden;   
+}
+body.loading .amixer-webui-spinner {
+	display: block;
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	width="256px" height="256px" viewBox="0 0 256 256" enable-background="new 0 0 256 256" xml:space="preserve">
+	<g>
+		<rect y="179" fill="#006064" width="150" height="15" />
+		<rect x="150" y="179" fill="#BDBDBD" width="106" height="15" />
+		<circle fill="#006064" cx="150" cy="186" r="24" />
+	</g>
+	<g>
+		<rect y="120" fill="#006064" width="91" height="15" />
+		<rect x="90" y="120" fill="#BDBDBD" width="166" height="15" />
+		<circle fill="#006064" cx="90" cy="128" r="24" />
+	</g>
+	<g>
+		<rect y="63" fill="#006064" width="181" height="15" />
+		<rect x="181" y="63" fill="#BDBDBD" width="75" height="15" />
+		<circle fill="#006064" cx="181" cy="70" r="24" />
+	</g>
+</svg>
