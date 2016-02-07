@@ -4,6 +4,8 @@
 
 Client-server application for easy configure of ALSA volume controls using network device (smartphone, tablet, PC, etc.).
 
+[![Screenshot](screenshot.png)](screenshot.png)
+
 
 ## Server requirements
 
@@ -12,14 +14,11 @@ Client-server application for easy configure of ALSA volume controls using netwo
 
 ## Supported browsers
 
-- IE10+
 - Edge
 - Chrome
 - Firefox
 - Opera
-- Safari
 - Chrome (Android)
-- Mobile Safari
 
 ## Getting Started
 
