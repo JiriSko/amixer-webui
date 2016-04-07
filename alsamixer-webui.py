@@ -61,7 +61,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 	def __dynamic_request__(self, mode):
 		if (self.path == "/" and mode == "GET"):
 			self.send_response(200)
-			self.send_header("Conent-Type", "text/html")
+			self.send_header("Content-Type", "text/html")
 			self.end_headers()
 			f = open("index.tpl")
 			html = f.read().replace("{$hostname}", socket.gethostname())
@@ -73,7 +73,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 			amixer_contents = os.popen("amixer contents").read()
 			
 			self.send_response(200)
-			self.send_header("Conent-Type", "application/json")
+			self.send_header("Content-Type", "application/json")
 			self.end_headers()
 			
 			interfaces = []
@@ -153,7 +153,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 				return
 			
 			self.send_response(200)
-			self.send_header("Conent-Type", "text/html")
+			self.send_header("Content-Type", "text/html")
 			self.end_headers()
 		
 		else:
