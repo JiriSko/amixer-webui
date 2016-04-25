@@ -1,22 +1,18 @@
 var controls;
 
-var getJSON = function(url)
+var getJSON = function(url, successCallback, failCallback)
 {
-	return new Promise(function (resolve, reject)
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function()
 	{
-		var xhr = new XMLHttpRequest();
-		xhr.open('GET', url, true);
-		xhr.responseType = 'json';
-		xhr.onload = function()
-		{
-			if (xhr.status === 200) {
-				resolve(xhr.response);
-			} else {
-				reject(xhr.status);
-			}
-		};
-		xhr.send();
-	});
+		if (xhttp.readyState == 4 && xhttp.status == 200) {
+			successCallback(JSON.parse(xhttp.responseText));
+		} else if (xhttp.readyState == 4 && typeof failCallback !== "undefined") {
+			failCallback(xhttp.status);
+		}
+	};
+	xhttp.open('GET', url, true);
+	xhttp.send();
 };
 
 var sendRequest = function(mode, url)
@@ -141,7 +137,7 @@ var drawControls = function(controls)
 						html += '<span class="channelDescription">' + control.volume.channels[i] + '</span>';
 					}
 					html += '<input type="range" min="' + control.volume.min + '" max="' + control.volume.max + '" stype="' + control.volume.step + '" value="' + control.volume.values[i] + '" onchange="changeVolume(' + control.volume.id + ', ' + i + ', this.value)" class="' + control.volume.id + '_volume mdl-slider mdl-js-slider">';
-					html += '<span id="' + control.volume.id + '_channel_desc_' + i + '" class="value ' + control.volume.id + 'channel_desc' + '">' + control.volume.values[i] + '</span>';
+					html += '<span id="' + control.volume.id + '_channel_desc_' + i + '" class="value ' + control.volume.id + 'channel_desc' + '">' + Math.round(100 * control.volume.values[i] / control.volume.max) + '</span>&nbsp;%';
 					html += '</div>';
 				}
 			}
@@ -184,9 +180,12 @@ var changeVolume = function(id, i, value)
 	document.body.className += " loading";
 	
 	document.getElementById(id + '_channel_desc_' + i).innerHTML = value;
-	
-	var bgFlexLower = document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[0].style.flex;
-	var bgFlexUpper = document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[1].style.flex;
+
+	var isBgFlexPresent = document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes.length === 2;
+	if (isBgFlexPresent) {
+		var bgFlexLower = document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[0].style.flex;
+		var bgFlexUpper = document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[1].style.flex;
+	}
 	
 	if (document.getElementById(id + '_bind') && document.getElementById(id + '_bind').checked) {
 		//console.log("Changed volume for all channel on control [id=" + id + "] to value: " + value)
@@ -194,9 +193,11 @@ var changeVolume = function(id, i, value)
 		var descElements = document.getElementsByClassName(id + 'channel_desc');
 		for (var i = 0; i < volumeElements.length; i++) {
 			volumeElements[i].value = value;
-			descElements[i].innerHTML = value;
-			document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[0].style.flex = bgFlexLower;
-			document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[1].style.flex = bgFlexUpper;
+			descElements[i].innerHTML = Math.round(100 * value / volumeElements[i].getAttribute('max'));
+			if (isBgFlexPresent) {
+				document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[0].style.flex = bgFlexLower;
+				document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[1].style.flex = bgFlexUpper;
+			}
 		}
 	} else {
 		//console.log("Changed volume on channel " + i + " on control [id=" + id + "] to value: " + value);
@@ -214,7 +215,7 @@ var changeVolume = function(id, i, value)
 
 document.addEventListener("DOMContentLoaded", function(event)
 {
-	getJSON('controls/').then(function(data)
+	getJSON('controls/', function(data)
 	{
 		controls = getControls(data);
 		

@@ -14,6 +14,7 @@ Client-server application for easy configure of ALSA volume controls using netwo
 
 ## Supported browsers
 
+- Internet Explorer
 - Edge
 - Chrome
 - Firefox

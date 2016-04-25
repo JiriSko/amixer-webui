@@ -2,6 +2,21 @@ html, body {
 	background-color: #F5F5F5;
 }
 
+.mdl-layout__header-row {
+	padding-left: 40px;
+}
+@media screen and (max-width: 1024px) {
+	.mdl-layout__header-row {
+		padding-left: 16px;
+	}
+}
+
+@media (max-width: 479px) {
+	.mdl-grid {
+		padding: 4px;
+	}
+}
+
 .amixer-webui-control {
 	padding-bottom: 0;
 }
@@ -17,6 +32,11 @@ html, body {
 	margin-bottom: 0px;
 	padding: 8px;
 	height: 28px;
+}
+@media (max-width: 479px) {
+	.amixer-webui-control > .amixer-webui-control__title {
+		margin: -4px;
+	}
 }
 
 .amixer-webui-control > .amixer-webui-control__title .amixer-webui-control__title-text {
@@ -35,11 +55,23 @@ html, body {
 }
 
 .amixer-webui-control .mdl-checkbox__box-outline {
-	background-color: white;
+	border-color: white;
+}
+.amixer-webui-control .mdl-checkbox.is-checked .mdl-checkbox__box-outline {
+    border-color: white;
+    background-color: #006064;
+}
+.amixer-webui-control .mdl-checkbox.is-checked .mdl-checkbox__tick-outline {
+	background: white url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+DQo8c3ZnDQogICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iDQogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIg0KICAgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIg0KICAgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyINCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyINCiAgIHZlcnNpb249IjEuMSINCiAgIHZpZXdCb3g9IjAgMCAxIDEiDQogICBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWluWU1pbiBtZWV0Ij4NCiAgPHBhdGgNCiAgICAgZD0iTSAwLjA0MDM4MDU5LDAuNjI2Nzc2NyAwLjE0NjQ0NjYxLDAuNTIwNzEwNjggMC40MjkyODkzMiwwLjgwMzU1MzM5IDAuMzIzMjIzMywwLjkwOTYxOTQxIHogTSAwLjIxNzE1NzI5LDAuODAzNTUzMzkgMC44NTM1NTMzOSwwLjE2NzE1NzI5IDAuOTU5NjE5NDEsMC4yNzMyMjMzIDAuMzIzMjIzMywwLjkwOTYxOTQxIHoiDQogICAgIGlkPSJyZWN0Mzc4MCINCiAgICAgc3R5bGU9ImZpbGw6IzAwNjA2NDtmaWxsLW9wYWNpdHk6MTtzdHJva2U6bm9uZSIgLz4NCjwvc3ZnPg0K");
 }
 
 .amixer-webui-control > .amixer-webui-control__actions {
-	padding: 8px;
+	padding: 8px 0;
+}
+@media (max-width: 479px) {
+	.amixer-webui-control > .amixer-webui-control__actions {
+		padding-bottom: 4px;
+	}
 }
 
 .amixer-webui-control.off > .amixer-webui-control__actions {
@@ -49,6 +81,11 @@ html, body {
 .amixer-webui-control > .amixer-webui-control__actions .mdl-radio {
 	margin-left: 10px;
 	margin-right: 10px;
+}
+@media (max-width: 479px) {
+	.amixer-webui-control > .amixer-webui-control__actions .mdl-radio {
+		margin-left: inherit;
+	}
 }
 
 .amixer-webui-control .volumes {
@@ -60,8 +97,13 @@ html, body {
 	width: 120px;
 }
 
-.amixer-webui-control .volumes .mdl-slider__container {
+.amixer-webui-control .volumes .mdl-slider__container,
+.amixer-webui-control .volumes .mdl-slider__ie-container {
 	width: 100%;
+}
+.amixer-webui-control .volumes .mdl-slider__ie-container {
+	position: relative;
+	bottom: 5px;
 }
 
 
