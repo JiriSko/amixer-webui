@@ -44,7 +44,7 @@ html, body {
 	font-weight: 300;
 	line-height: normal;
 	padding: 0;
-    margin: 0;
+	margin: 0;
 	color: white;
 	display: flex;
 }
@@ -58,8 +58,8 @@ html, body {
 	border-color: white;
 }
 .amixer-webui-control .mdl-checkbox.is-checked .mdl-checkbox__box-outline {
-    border-color: white;
-    background-color: #006064;
+	border-color: white;
+	background-color: #006064;
 }
 .amixer-webui-control .mdl-checkbox.is-checked .mdl-checkbox__tick-outline {
 	background: white url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+DQo8c3ZnDQogICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iDQogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIg0KICAgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIg0KICAgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyINCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyINCiAgIHZlcnNpb249IjEuMSINCiAgIHZpZXdCb3g9IjAgMCAxIDEiDQogICBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWluWU1pbiBtZWV0Ij4NCiAgPHBhdGgNCiAgICAgZD0iTSAwLjA0MDM4MDU5LDAuNjI2Nzc2NyAwLjE0NjQ0NjYxLDAuNTIwNzEwNjggMC40MjkyODkzMiwwLjgwMzU1MzM5IDAuMzIzMjIzMywwLjkwOTYxOTQxIHogTSAwLjIxNzE1NzI5LDAuODAzNTUzMzkgMC44NTM1NTMzOSwwLjE2NzE1NzI5IDAuOTU5NjE5NDEsMC4yNzMyMjMzIDAuMzIzMjIzMywwLjkwOTYxOTQxIHoiDQogICAgIGlkPSJyZWN0Mzc4MCINCiAgICAgc3R5bGU9ImZpbGw6IzAwNjA2NDtmaWxsLW9wYWNpdHk6MTtzdHJva2U6bm9uZSIgLz4NCjwvc3ZnPg0K");
