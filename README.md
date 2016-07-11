@@ -36,7 +36,6 @@ Alternatively you can [download](https://github.com/JiriSko/amixer-webui/archive
 You can use init.d script `amixer-webui` (do not forget set correct path to files on line 19):
 
 ```bash
-$ chmod 755 amixer-webui
 $ sudo cp amixer-webui /etc/init.d/amixer-webui
 $ sudo update-rc.d amixer-webui defaults
 $ sudo /etc/init.d/amixer-webui start

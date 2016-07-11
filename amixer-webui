@@ -3,7 +3,7 @@
 # File:    /etc/init.d/amixer-webui
 # Date:    22. 1. 2015
 # Author:  Jiri Skorpil <jiri.sko@gmail.com>
-# Desc.:   init.d script for start/stop ALSA Mixer WebUI webserver
+# Desc.:   System V init script for start/stop ALSA Mixer WebUI webserver
 #
 
 ### BEGIN INIT INFO
