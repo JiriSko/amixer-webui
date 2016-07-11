@@ -1,0 +1,58 @@
+#!/bin/sh /etc/rc.common
+#
+# File:    /etc/init.d/amixer-webui
+# Date:    11. 7. 2016
+# Author:  Jiri Skorpil <jiri.sko@gmail.com>
+# Desc.:   procd init script for start/stop ALSA Mixer WebUI webserver on OpenWrt
+#
+
+EXTRA_COMMANDS="status"
+
+START=99
+STOP=0
+
+path=/root/alsamixer-webui
+port= # if not set will be used default
+
+alsa_path=/var/lib/alsa
+asound=asound.state
+
+pid="`ps w | grep alsamixer-webui | grep -v grep | awk '{print $1}'`"
+
+start() {
+    if [ "$pid" != "" ]
+    then
+      echo "alsamixer-webui already running"
+    else
+      cd $path
+      $path/alsamixer-webui.py $port >/dev/null 2>&1 &
+      if [ ! -f "$alsa_path/$asound" ]; then
+        mkdir $alsa_path
+        if [ -f "$path/$asound" ]; then
+          cp $path/$asound $alsa_path/$asound
+          alsactl restore
+        else
+          alsactl init
+        fi
+      fi
+      echo "alsamixer-webui started"
+    fi
+}
+stop() {
+    if [ "$pid" != "" ]
+    then
+      kill -9 $pid > /dev/null 2>&1
+      cp $alsa_path/$asound $path/$asound
+      echo "alsamixer-webui stopped"
+    else
+      echo "alsamixer-webui is not running"
+    fi
+}
+status() {
+    if [ "$pid" != "" ]
+    then
+      echo "alsamixer-webui is running"
+    else
+      echo "alsamixer-webui is not running"
+    fi
+}

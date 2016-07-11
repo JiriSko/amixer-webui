@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
-Client-server application for easy configure of ALSA volume controls using network device (smartphone, tablet, PC, etc.).
+Client-server application for easy configuration of ALSA volume controls using network device (smartphone, tablet, PC, etc.).
 
 [![Screenshot](screenshot.png)](screenshot.png)
 
@@ -31,9 +31,15 @@ $ git clone https://github.com/JiriSko/amixer-webui.git
 
 Alternatively you can [download](https://github.com/JiriSko/amixer-webui/archive/master.zip) this repository.
 
-## Install
+## Synopsis
 
-You can use init.d script `amixer-webui` (do not forget set correct path to files on line 19):
+```
+alsamixer-webui.py <port=8080>
+```
+
+## Install on desktop distributions
+
+You can use init.d script `amixer-webui` (do not forget to set correct [path](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui#L19) and optionally [port](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui#L20)):
 
 ```bash
 $ sudo cp amixer-webui /etc/init.d/amixer-webui
@@ -41,13 +47,19 @@ $ sudo update-rc.d amixer-webui defaults
 $ sudo /etc/init.d/amixer-webui start
 ```
 
-or simply run it e.g. from `rc.local` using:
+or simply run it in background e.g. from `rc.local`.
 
-```
-/path/to/alsamixer-webui.py >/dev/null 2>&1 &
+## Install on OpenWrt
+
+Similarly set correct [path](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui_openwrt#L14) and [port](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui_openwrt#L15) and then run:
+
+```bash
+# cp amixer-webui_openwrt /etc/init.d/amixer-webui
+# /etc/init.d/amixer-webui enable
+# /etc/init.d/amixer-webui start
 ```
 
-Default port is 8080, it can be easily changed by passing second CLI parameter.
+Script automatically restores ALSA settings after reboot.
 
 
 ## License
