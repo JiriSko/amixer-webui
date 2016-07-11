@@ -152,6 +152,8 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 			else:
 				return
 			
+			os.popen("alsactl store").read()
+			
 			self.send_response(200)
 			self.send_header("Content-Type", "text/html")
 			self.end_headers()
