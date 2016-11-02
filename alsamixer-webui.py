@@ -144,7 +144,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 			elif path[0] == "volume" and path[1].isdigit() and int(path[1]) > 0:
 				volumes = []
 				for volume in path[2:]:
-					if volume != "":
+					if volume != "" and is_digit(volume):
 						volumes.append(volume)
 				command = "amixer cset numid=%s -- %s" % (path[1], ",".join(volumes))
 				os.popen(command).read()
@@ -185,7 +185,13 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 			self.send_error(404, "File Not Found: %s" % self.path[1:])
 			return False
 
-
+def is_digit(n):
+    try:
+        int(n)
+        return True
+    except ValueError:
+        return  False
+			
 if __name__ == "__main__":
 	
 	port = 8080
