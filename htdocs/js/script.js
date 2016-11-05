@@ -111,7 +111,7 @@ var drawControls = function(controls)
 			html += '<div>';
 			
 			if (control.volume !== undefined && control.volume.values.length > 1) {
-				html += '<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="' + control.volume.id + '_bind"><input type="checkbox" id="' + control.volume.id + '_bind" class="mdl-checkbox__input" checked><span class="mdl-checkbox__label mdl-cell--hide-phone">Bind sliders</span></label>';
+				html += '<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="' + control.volume.id + '_bind"><input type="checkbox" id="' + control.volume.id + '_bind" class="mdl-checkbox__input" checked><span class="mdl-checkbox__label mdl-cell--hide-phone">Lock sliders</span></label>';
 			}
 			
 			html += "</div>";
@@ -211,21 +211,73 @@ var changeVolume = function(id, i, value)
 	sendRequest('PUT', "volume/" + id + "/" + volumes.join("/") + "/");
 };
 
+var changeCard = function (id)
+{
+	sendRequest('PUT', 'card/' + id);
+	document.getElementById('controls').innerHTML = '';
+	loadControls();
 
+	var cardSelects = document.getElementsByClassName('amixer-webui-cards');
+	for (var i = 0; i < cardSelects.length; i++)
+	{
+		if (cardSelects[i].value != id) {
+			cardSelects[i].value = id;
+		}
+	}
+};
 
-document.addEventListener("DOMContentLoaded", function(event)
+var loadCards = function ()
+{
+	getJSON('cards/', function(data)
+	{
+		if (Object.keys(data).length <= 1)
+		{
+			document.getElementsByClassName('mdl-layout__header-row')[1].remove();
+			return;
+		}
+
+		var select = '<div class="mdl-textfield mdl-js-textfield"><select class="amixer-webui-cards mdl-textfield__input" onchange="changeCard(this.value)"><optgroup label="Sound card" class="mdl-cell--hide-desktop"></optgroup>';
+		for (var i in data) {
+			select += '<option value="' + i + '">' + data[i] + '</option>';
+		}
+		select += '</select></div>';
+
+		document.getElementsByClassName('mdl-layout__header-row')[0].innerHTML += '<div class="mdl-layout-spacer"></div><div class="mdl-cell--hide-phone"><span class="mdl-cell--hide-tablet">Sound card:</span> ' + select + '</div>';
+		document.getElementsByClassName('mdl-layout__header-row')[1].innerHTML += select;
+
+		getJSON('card/', function(id)
+		{
+			if (id !== null)
+			{
+				var cardSelects = document.getElementsByClassName('amixer-webui-cards');
+				for (var i = 0; i < cardSelects.length; i++) {
+					cardSelects[i].value = id;
+				}
+			}
+
+		});
+	});
+};
+
+var loadControls = function()
 {
 	getJSON('controls/', function(data)
 	{
 		controls = getControls(data);
-		
+
 		document.body.className = document.body.className.replace(/\s?loading/, "");
-		
+
 		drawControls(controls);
-		
+
 		componentHandler.upgradeAllRegistered();
-		
+
 	}, function(status) {
 		alert('Something went wrong.');
 	});
+};
+
+document.addEventListener("DOMContentLoaded", function(event)
+{
+	loadCards();
+	loadControls();
 });

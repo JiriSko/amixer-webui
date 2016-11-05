@@ -41,12 +41,15 @@
 	
 	<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
 		
-		<div class="mdl-layout__header">
+		<div class="mdl-layout__header mdl-layout__header--waterfall">
 			<header class="mdl-layout__header-row">
 				<h1 class="mdl-layout-title">
 					ALSA Mixer WebUI on {$hostname}
 				</h1>
 			</header>
+			<div class="mdl-layout__header-row mdl-cell--hide-desktop mdl-cell--hide-tablet">
+				<div class="mdl-layout-spacer"></div>
+			</div>
 		</div>
 		
 		<main class="mdl-layout__content">

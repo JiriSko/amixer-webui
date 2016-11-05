@@ -28,8 +28,7 @@ html, body {
 .amixer-webui-control > .amixer-webui-control__title {
 	display: flex;
 	background-color: #006064;
-	margin: -8px;
-	margin-bottom: 0px;
+	margin: -8px -8px 0;
 	padding: 8px;
 	height: 28px;
 }
@@ -104,6 +103,14 @@ html, body {
 .amixer-webui-control .volumes .mdl-slider__ie-container {
 	position: relative;
 	bottom: 5px;
+}
+
+.mdl-textfield {
+	width: inherit;
+}
+.amixer-webui-cards optgroup,
+.amixer-webui-cards option {
+	color: rgba(0, 0, 0, 0.8);
 }
 
 
