@@ -78,6 +78,12 @@ class MyTest(unittest.TestCase):
                 return IO(b"GET /controls/")
         self.MockServer(self.amixer.Handler, MockRequest())
 
+    def test_GET_equalizer(self):
+        class MockRequest(object):
+            def makefile(self, *args, **kwargs):
+                return IO(b"GET /equalizer/")
+        self.MockServer(self.amixer.Handler, MockRequest())
+
     def test_amixer_command(self):
         self.assertEqual(self.amixer.Handler.__get_amixer_command__(), ["amixer"])
 

@@ -40,6 +40,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     HTTP_NOT_FOUND = 404
 
     card = None
+    equal = False
 
     def do_GET(self):
         if self.__dynamic_request__("GET") is not None or self.__static_files__() is not None:
@@ -53,10 +54,12 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     @staticmethod
     def __get_amixer_command__():
-        if Handler.card is None:
-            return ["amixer"]
-        else:
-            return ["amixer", "-c", "%d" % Handler.card]
+        command = ["amixer"]
+        if Handler.card is not None:
+            command += ["-c", "%d" % Handler.card]
+        if Handler.equal is True:
+            command += ["-D", "equal"]
+        return command
 
     @staticmethod
     def __get_channel_name__(desc, name, i):
@@ -73,27 +76,87 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         return None
 
+    def __get_controls__(self):
+        try:
+            amixer = Popen(self.__get_amixer_command__(), stdout=PIPE)
+            amixer_channels = Popen(["grep", "-e", "control", "-e", "channels"], stdin=amixer.stdout, stdout=PIPE)
+            amixer_chandesc = amixer_channels.communicate()[0].split("Simple mixer control ")[1:]
+
+            amixer_contents = Popen(self.__get_amixer_command__() + ["contents"], stdout=PIPE).communicate()[0]
+        except OSError:
+            return []
+
+        interfaces = []
+        for i in amixer_contents.split("numid=")[1:]:
+            lines = i.split("\n")
+
+            interface = {
+                "id": int(lines[0].split(",")[0]),
+                "iface": lines[0].split(",")[1].replace("iface=", ""),
+                "name": lines[0].split(",")[2].replace("name=", "").replace("'", ""),
+                "type": lines[1].split(",")[0].replace("  ; type=", ""),
+                "access": lines[1].split(",")[1].replace("access=", ""),
+            }
+
+            if interface["type"] == "ENUMERATED":
+                items = {}
+                for line in lines[2:-2]:
+                    pcs = line.split(" '")
+                    id = pcs[0].replace("  ; Item #", "")
+                    name = pcs[1][:-1]
+                    items[id] = name
+                interface["items"] = items
+                interface["values"] = []
+                for value in lines[-2].replace("  : values=", "").split(","):
+                    interface["values"].append(int(value))
+
+            elif interface["type"] == "BOOLEAN":
+                interface["values"] = []
+                for value in lines[-2].replace("  : values=", "").split(","):
+                    interface["values"].append(True if value == "on" else False)
+
+            elif interface["type"] == "INTEGER":
+                interface["min"] = int(lines[1].split(",")[3].replace("min=", ""))
+                interface["max"] = int(lines[1].split(",")[4].replace("max=", ""))
+                interface["step"] = int(lines[1].split(",")[5].replace("step=", ""))
+                line = ""
+                for j in reversed(lines):
+                    if "  : values=" in j:
+                        line = j
+                        break
+                interface["values"] = []
+                interface["channels"] = []
+                i = 0
+                for value in line.replace("  : values=", "").split(","):
+                    interface["values"].append(value)
+                    channel_desc = self.__get_channel_name__(amixer_chandesc, interface["name"], i)
+                    if channel_desc is not None:
+                        interface["channels"].append(channel_desc)
+                    i += 1
+                if len(interface["channels"]) != len(interface["values"]):
+                    interface.pop("channels", None)
+
+            interfaces.append(interface)
+
+        return interfaces
+
     def __dynamic_request__(self, mode):
         if self.path == "/" and mode == "GET":
-            self.send_response(self.HTTP_OK)
-            self.send_header("Content-Type", "text/html")
-            self.end_headers()
+            """Sends HTML file (GET /)"""
+            self.__send_headers("text/html")
             f = open("index.tpl")
             html = f.read().replace("{$hostname}", socket.gethostname())
             f.close()
             self.wfile.write(html)
 
         elif self.path == "/hostname/" and mode == "GET":
-            self.send_response(self.HTTP_OK)
-            self.send_header("Content-Type", "text/plain")
-            self.end_headers()
-
+            """Sends server's hostname (GET /hostname) [plain text:String]"""
+            self.__send_headers("text/plain")
             self.wfile.write(socket.gethostname())
 
         elif self.path == "/cards/" and mode == "GET":
-            self.send_response(self.HTTP_OK)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
+            """Sends list of sound cards (GET /cards) [JSON object - <number:Number>:<name:String>]"""
+            self.__send_headers("application/json")
 
             p1 = Popen(["cat", "/proc/asound/cards"], stdout=PIPE)
             p2 = Popen(["grep", "\]:"], stdin=p1.stdout, stdout=PIPE)
@@ -109,105 +172,74 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(cards))
 
         elif self.path == '/card/' and mode == "GET":
-            self.send_response(self.HTTP_OK)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-
+            """Sends number of selected sound card (GET /card) [JSON - <Number|null>]"""
+            self.__send_headers("application/json")
             self.wfile.write(json.dumps(Handler.card))
 
         elif self.path == "/controls/" and mode == "GET":
-            amixer = Popen(self.__get_amixer_command__(), stdout=PIPE)
-            amixer_channels = Popen(["grep", "-e", "control", "-e", "channels"], stdin=amixer.stdout, stdout=PIPE)
-            amixer_chandesc = amixer_channels.communicate()[0].split("Simple mixer control ")[1:]
+            """Sends list of controls of selected sound card (GET /controls/) [JSON - list of objects: {
+            --- common keys ---
+                access: <String>
+                id: <Number>
+                iface: <String>
+                name: <String>
+                type: <ENUMERATED|BOOLEAN|INTEGER:String>
+            --- for type ENUMERATED ---
+                items: <Object {<number:Number>:<name:String>}>
+                values: [<Number> - selected item]
+            --- for type BOOLEAN ---
+                values: [true|false]
+            --- for type INTEGER ---
+                channels: <Array of String> - channel names
+                min: <Number>
+                max: <Number>
+                step: <Number>
+                values: <Array of Number> - channel values (order corresponds with order in `channels` key)
+            }]"""
+            self.__send_headers("application/json")
+            self.wfile.write(json.dumps(self.__get_controls__()))
 
-            amixer_contents = Popen(self.__get_amixer_command__() + ["contents"], stdout=PIPE).communicate()[0]
-
-            self.send_response(self.HTTP_OK)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-
-            interfaces = []
-            for i in amixer_contents.split("numid=")[1:]:
-                lines = i.split("\n")
-
-                interface = {
-                    "id":       int(lines[0].split(",")[0]),
-                    "iface":    lines[0].split(",")[1].replace("iface=", ""),
-                    "name":     lines[0].split(",")[2].replace("name=", "").replace("'", ""),
-                    "type":     lines[1].split(",")[0].replace("  ; type=", ""),
-                    "access":   lines[1].split(",")[1].replace("access=", ""),
-                }
-
-                if interface["type"] == "ENUMERATED":
-                    items = {}
-                    for line in lines[2:-2]:
-                        pcs = line.split(" '")
-                        id = pcs[0].replace("  ; Item #", "")
-                        name = pcs[1][:-1]
-                        items[id] = name
-                    interface["items"] = items
-                    interface["values"] = []
-                    for value in lines[-2].replace("  : values=", "").split(","):
-                        interface["values"].append(int(value))
-
-                elif interface["type"] == "BOOLEAN":
-                    interface["values"] = []
-                    for value in lines[-2].replace("  : values=", "").split(","):
-                        interface["values"].append(True if value == "on" else False)
-
-                elif interface["type"] == "INTEGER":
-                    interface["min"] = int(lines[1].split(",")[3].replace("min=", ""))
-                    interface["max"] = int(lines[1].split(",")[4].replace("max=", ""))
-                    interface["step"] = int(lines[1].split(",")[5].replace("step=", ""))
-                    line = ""
-                    for j in reversed(lines):
-                        if "  : values=" in j:
-                            line = j
-                            break
-                    interface["values"] = []
-                    interface["channels"] = []
-                    i = 0
-                    for value in line.replace("  : values=", "").split(","):
-                        interface["values"].append(value)
-                        channel_desc = self.__get_channel_name__(amixer_chandesc, interface["name"], i)
-                        if channel_desc is not None:
-                            interface["channels"].append(channel_desc)
-                        i += 1
-                    if len(interface["channels"]) != len(interface["values"]):
-                        interface.pop("channels", None)
-
-                interfaces.append(interface)
-
-            self.wfile.write(json.dumps(interfaces))
+        elif self.path == "/equalizer/" and mode == "GET":
+            """Sends list of equalizer controls (GET /equalizer) [same as /controls/ but contains only controls of INTEGER type]"""
+            self.__send_headers("application/json")
+            Handler.equal = True
+            self.wfile.write(json.dumps(self.__get_controls__()))
+            Handler.equal = False
 
         elif mode == "PUT":
             path = self.path[1:].split("/")
 
-            if path[0] == "control" and path[1].isdigit() and int(path[1]) > 0 and (path[2] == "0" or path[2] == "1"):
-                call(self.__get_amixer_command__() + ["cset", "numid=%s" % path[1], "--", 'on' if path[2] == '1' else 'off'])
+            try:
 
-            elif path[0] == "source" and path[1].isdigit() and int(path[1]) > 0 and path[2].isdigit():
-                call(self.__get_amixer_command__() + ["cset", "numid=%s" % path[1], "--", path[2]])
+                if path[0] == "control" and path[1].isdigit() and int(path[1]) > 0 and (path[2] == "0" or path[2] == "1"):
+                    """Turns BOOLEAN control on or off (PUT /control/<control id:integer>/<0|1>/)"""
+                    call(self.__get_amixer_command__() + ["cset", "numid=%s" % path[1], "--", 'on' if path[2] == '1' else 'off'])
 
-            elif path[0] == "volume" and path[1].isdigit() and int(path[1]) > 0:
-                volumes = []
-                for volume in path[2:]:
-                    if volume != "" and is_digit(volume):
-                        volumes.append(volume)
-                command = self.__get_amixer_command__() + ["cset", "numid=%s" % path[1], "--", ",".join(volumes)]
-                call(command)
+                elif path[0] == "source" and path[1].isdigit() and int(path[1]) > 0 and path[2].isdigit():
+                    """Changes active ENUMERATED item (PUT /source/<control id:integer>/<item number:integer>/)"""
+                    call(self.__get_amixer_command__() + ["cset", "numid=%s" % path[1], "--", path[2]])
 
-            elif path[0] == "card" and path[1].isdigit():
-                Handler.card = int(path[1])
+                elif path[0] == "volume" and path[1].isdigit() and int(path[1]) > 0:
+                    """Changes INTEGER channel volumes (PUT /source/<control id:integer>/(<value:number>)+)"""
+                    volumes = []
+                    for volume in path[2:]:
+                        if volume != "" and is_digit(volume):
+                            volumes.append(volume)
+                    command = self.__get_amixer_command__() + ["cset", "numid=%s" % path[1], "--", ",".join(volumes)]
+                    call(command)
 
-            else:
-                return
+                elif path[0] == "card" and path[1].isdigit():
+                    """Changes selected sound card (PUT /card/<card number:integer>)"""
+                    Handler.card = int(path[1])
 
-            call(["alsactl", "store"])
+                else:
+                    return
 
-            self.send_response(self.HTTP_OK)
-            self.send_header("Content-Type", "text/html")
-            self.end_headers()
+                call(["alsactl", "store"])
+            except OSError:
+                pass
+
+            self.__send_headers("text/html")
 
         else:
             return
@@ -224,9 +256,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 
             if mime_type is not None:
                 f = open(os.curdir + os.sep + self.htdocs_root + os.sep + self.path)
-                self.send_response(self.HTTP_OK)
-                self.send_header("Content-Type", mime_type)
-                self.end_headers()
+                self.__send_headers(mime_type)
                 self.wfile.write(f.read())
                 f.close()
                 return True
@@ -234,6 +264,11 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         except IOError:
             self.send_error(self.HTTP_NOT_FOUND, "File Not Found: %s" % self.path[1:])
             return False
+
+    def __send_headers(self, content_type, code=HTTP_OK):
+        self.send_response(code)
+        self.send_header("Content-Type", content_type)
+        self.end_headers()
 
 
 def is_digit(n):
