@@ -1,2 +1,5 @@
 /.idea/
 /nbproject/
+*.pyc
+/cover/
+.coverage
