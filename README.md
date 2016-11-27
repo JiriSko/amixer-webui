@@ -1,5 +1,6 @@
 # ALSA Mixer WebUI
 
+[![Build Status](https://travis-ci.org/JiriSko/amixer-webui.svg?branch=master)](https://travis-ci.org/JiriSko/amixer-webui)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 Client-server application for easy configuration of ALSA volume controls using network device (smartphone, tablet, PC, etc.).
@@ -27,11 +28,11 @@ There exists also [client for Android](https://github.com/JiriSko/amixer-webui-a
 
 ### Download / Clone
 
+You can download [latest release](https://github.com/JiriSko/amixer-webui/releases/latest) or alternatively clone whole repository:
+
 ```bash
 $ git clone https://github.com/JiriSko/amixer-webui.git
 ```
-
-Alternatively you can [download](https://github.com/JiriSko/amixer-webui/archive/master.zip) this repository.
 
 ## Synopsis
 
