@@ -111,7 +111,7 @@ var drawControls = function(controls)
 			html += '<div>';
 			
 			if (control.volume !== undefined && control.volume.values.length > 1) {
-				html += '<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="' + control.volume.id + '_bind"><input type="checkbox" id="' + control.volume.id + '_bind" class="mdl-checkbox__input" checked><span class="mdl-checkbox__label mdl-cell--hide-phone">Lock sliders</span></label>';
+				html += '<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="' + control.volume.id + '_lock"><input type="checkbox" id="' + control.volume.id + '_lock" class="mdl-checkbox__input" checked><span class="mdl-checkbox__label mdl-cell--hide-phone">Lock sliders</span></label>';
 			}
 			
 			html += "</div>";
@@ -178,8 +178,10 @@ var changeSource = function(id, value)
 var changeVolume = function(id, i, value)
 {
 	document.body.className += " loading";
-	
-	document.getElementById(id + '_channel_desc_' + i).innerHTML = value;
+
+	if (document.getElementById(id + '_channel_desc_' + i)) {
+		document.getElementById(id + '_channel_desc_' + i).innerHTML = value;
+	}
 
 	var isBgFlexPresent = document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes.length === 2;
 	if (isBgFlexPresent) {
@@ -187,13 +189,16 @@ var changeVolume = function(id, i, value)
 		var bgFlexUpper = document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[1].style.flex;
 	}
 	
-	if (document.getElementById(id + '_bind') && document.getElementById(id + '_bind').checked) {
+	if ((document.getElementById(id + '_lock') && document.getElementById(id + '_lock').checked)
+		|| (id.substr(0, 1) === 'e' && document.getElementById('equalizer_lock').checked)) {
 		//console.log("Changed volume for all channel on control [id=" + id + "] to value: " + value)
 		var volumeElements = document.getElementsByClassName(id + '_volume');
 		var descElements = document.getElementsByClassName(id + 'channel_desc');
 		for (var i = 0; i < volumeElements.length; i++) {
 			volumeElements[i].value = value;
-			descElements[i].innerHTML = Math.round(100 * value / volumeElements[i].getAttribute('max'));
+			if (descElements.length > 0) {
+				descElements[i].innerHTML = Math.round(100 * value / volumeElements[i].getAttribute('max'));
+			}
 			if (isBgFlexPresent) {
 				document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[0].style.flex = bgFlexLower;
 				document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[1].style.flex = bgFlexUpper;
@@ -208,7 +213,11 @@ var changeVolume = function(id, i, value)
 	for (var i = 0; i < elements.length; i++) {
 		volumes.push(elements[i].value);
 	}
-	sendRequest('PUT', "volume/" + id + "/" + volumes.join("/") + "/");
+	if (typeof id === "string" && id.substr(0, 1) === 'e') {
+		sendRequest('PUT', "equalizer/" + id.substr(1) + "/" + volumes.join("/") + "/");
+	} else {
+		sendRequest('PUT', "volume/" + id + "/" + volumes.join("/") + "/");
+	}
 };
 
 var changeCard = function (id)
@@ -242,10 +251,10 @@ var loadCards = function ()
 		}
 		select += '</select></div>';
 
-		document.getElementsByClassName('mdl-layout__header-row')[0].innerHTML += '<div class="mdl-layout-spacer"></div><div class="mdl-cell--hide-phone"><span class="mdl-cell--hide-tablet">Sound card:</span> ' + select + '</div>';
+		document.getElementsByClassName('mdl-layout__header-row')[0].innerHTML += '<div class="mdl-layout-spacer"></div><div class="mdl-cell--hide-phone"><span class="amixer-webui-sound-card__label mdl-cell--hide-tablet">Sound card:</span> ' + select + '</div>';
 		document.getElementsByClassName('mdl-layout__header-row')[1].innerHTML += select;
 
-		getJSON('card/', function(id)
+		getJSON('card/?' + Date.now(), function(id)
 		{
 			if (id !== null)
 			{
@@ -259,9 +268,58 @@ var loadCards = function ()
 	});
 };
 
+var loadEqualizer = function ()
+{
+	getJSON('equalizer/', function(data)
+	{
+		if (data && data.length)
+		{
+			document.querySelectorAll('.mdl-layout__header .mdl-layout-spacer')[0].outerHTML += '<button class="mdl-cell--hide-phone mdl-button mdl-js-button mdl-button--icon" title="Equalizer" onclick="document.querySelector(\'dialog\').showModal()"><i class="material-icons">equalizer</i></button>';
+			document.querySelectorAll('.mdl-layout__header .mdl-layout-spacer')[1].outerHTML += '<button class="mdl-button mdl-js-button mdl-button--icon" title="Equalizer" onclick="document.querySelector(\'dialog\').showModal()"><i class="material-icons">equalizer</i></button>';
+
+			showEqualizer(data);
+		}
+	});
+
+	var dialog = document.querySelector('dialog');
+	if (!dialog.showModal) {
+		dialogPolyfill.registerDialog(dialog);
+	}
+};
+
+var showEqualizer = function (data)
+{
+	var html = '<div class="amixer-webui-equalizer">' +
+		'<div class="amixer-webui-equalizer__container">';
+
+	for (var i in data)
+	{
+		var match = data[i].name.match(/[0-9]+\. ([0-9]+ k?Hz) .*/);
+		var name = match !== null ? match[1] : data[i].name;
+		html += '<div class="amixer-webui-equalizer__name" title="' + data[i].name + '">' + name + '</div>';
+		html += '<div class="amixer-webui-equalizer__band">';
+		for (var j in data[i].channels)
+		{
+			html += '<input class="e' + data[i].id + '_volume mdl-slider mdl-js-slider" type="range" min="' + data[i].min + '" max="' + data[i].max + '" value="' + data[i].values[j] + '" title="' + data[i].channels[j] + '" onchange="changeVolume(\'e' + data[i].id + '\', ' + j + ', this.value)">';
+		}
+		html += '</div>';
+	}
+
+	html += '</div></div>';
+
+	document.querySelector('.mdl-dialog__title').innerHTML = 'Equalizer';
+	document.querySelector('.mdl-dialog__content').innerHTML = html;
+	document.querySelector('.mdl-dialog__actions').innerHTML = '<button type="button" class="mdl-button mdl-js-button mdl-button--primary close">Close</button><label class="amixer-webui-equalizer__lock mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="equalizer_lock"><input type="checkbox" id="equalizer_lock" class="mdl-checkbox__input" checked><span class="mdl-checkbox__label">Lock sliders</span></label>';
+	document.querySelector('.mdl-dialog__actions .close').addEventListener('click', function() {
+		document.querySelector('dialog').close();
+	});
+
+	componentHandler.upgradeAllRegistered();
+};
+
 var loadControls = function()
 {
-	getJSON('controls/', function(data)
+	getJSON('controls/?' + Date.now(), function(data)
 	{
 		controls = getControls(data);
 
@@ -280,4 +338,5 @@ document.addEventListener("DOMContentLoaded", function(event)
 {
 	loadCards();
 	loadControls();
+	loadEqualizer();
 });

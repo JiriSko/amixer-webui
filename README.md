@@ -12,7 +12,9 @@ There exists also [client for Android](https://github.com/JiriSko/amixer-webui-a
 
 ## Server requirements
 
-- python2
+- python2.6 and newer; or python3.2 and newer
+- alsa-utils
+- alsaequal (OPTIONAL: for equalizer)
 
 
 ## Supported browsers

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # File:    alsamixer-webui.py
@@ -12,10 +12,18 @@ import re
 import os
 from subprocess import call, Popen, PIPE
 import socket
-import BaseHTTPServer
-import SocketServer
 import json
 
+try:
+    # Python 2.x
+    PYTHON_VERSION = 2
+    import BaseHTTPServer
+    import SocketServer
+except ImportError:
+    # Python 3.x
+    PYTHON_VERSION = 3
+    from http import server as BaseHTTPServer
+    import socketserver as SocketServer
 
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     static_files = {
@@ -30,6 +38,8 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         "ico": "image/x-icon",
         "json": "application/json",
         "map": "application/json",
+        "woff": "font/woff",
+        "woff2": "font/woff2",
     }
     htdocs_root = "htdocs"
 
@@ -80,9 +90,9 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         try:
             amixer = Popen(self.__get_amixer_command__(), stdout=PIPE)
             amixer_channels = Popen(["grep", "-e", "control", "-e", "channels"], stdin=amixer.stdout, stdout=PIPE)
-            amixer_chandesc = amixer_channels.communicate()[0].split("Simple mixer control ")[1:]
+            amixer_chandesc = self.__decode_string(amixer_channels.communicate()[0]).split("Simple mixer control ")[1:]
 
-            amixer_contents = Popen(self.__get_amixer_command__() + ["contents"], stdout=PIPE).communicate()[0]
+            amixer_contents = self.__decode_string(Popen(self.__get_amixer_command__() + ["contents"], stdout=PIPE).communicate()[0])
         except OSError:
             return []
 
@@ -140,6 +150,14 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         return interfaces
 
+    def __change_volume(self, num_id, volumes_path):
+        volumes = []
+        for volume in volumes_path:
+            if volume != "" and is_digit(volume):
+                volumes.append(volume)
+        command = self.__get_amixer_command__() + ["cset", "numid=%s" % num_id, "--", ",".join(volumes)]
+        call(command)
+
     def __dynamic_request__(self, mode):
         if self.path == "/" and mode == "GET":
             """Sends HTML file (GET /)"""
@@ -147,12 +165,12 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
             f = open("index.tpl")
             html = f.read().replace("{$hostname}", socket.gethostname())
             f.close()
-            self.wfile.write(html)
+            self.__write_response(html)
 
         elif self.path == "/hostname/" and mode == "GET":
             """Sends server's hostname (GET /hostname) [plain text:String]"""
             self.__send_headers("text/plain")
-            self.wfile.write(socket.gethostname())
+            self.__write_response(socket.gethostname())
 
         elif self.path == "/cards/" and mode == "GET":
             """Sends list of sound cards (GET /cards) [JSON object - <number:Number>:<name:String>]"""
@@ -164,19 +182,19 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 
             cards = {}
             if p2.returncode == 0:
-                for i in system_cards[0].split("\n")[:-1]:
+                for i in self.__decode_string(system_cards[0]).split("\n")[:-1]:
                     card_number = i.split(" [")[0].strip()
-                    card_detail = Popen(["amixer", "-c", card_number, "info"], stdout=PIPE).communicate()[0]
+                    card_detail = self.__decode_string(Popen(["amixer", "-c", card_number, "info"], stdout=PIPE).communicate()[0])
                     cards[card_number] = card_detail.split("\n")[1].split(":")[1].replace("'", "").strip()
 
-            self.wfile.write(json.dumps(cards))
+            self.__write_response(json.dumps(cards))
 
-        elif self.path == '/card/' and mode == "GET":
+        elif re.match('/card/(\?.*)?', self.path) and mode == "GET":
             """Sends number of selected sound card (GET /card) [JSON - <Number|null>]"""
             self.__send_headers("application/json")
-            self.wfile.write(json.dumps(Handler.card))
+            self.__write_response(json.dumps(Handler.card))
 
-        elif self.path == "/controls/" and mode == "GET":
+        elif re.match('/controls/(\?.*)?', self.path) and mode == "GET":
             """Sends list of controls of selected sound card (GET /controls/) [JSON - list of objects: {
             --- common keys ---
                 access: <String>
@@ -197,17 +215,18 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
                 values: <Array of Number> - channel values (order corresponds with order in `channels` key)
             }]"""
             self.__send_headers("application/json")
-            self.wfile.write(json.dumps(self.__get_controls__()))
+            self.__write_response(json.dumps(self.__get_controls__()))
 
         elif self.path == "/equalizer/" and mode == "GET":
             """Sends list of equalizer controls (GET /equalizer) [same as /controls/ but contains only controls of INTEGER type]"""
             self.__send_headers("application/json")
             Handler.equal = True
-            self.wfile.write(json.dumps(self.__get_controls__()))
+            self.__write_response(json.dumps(self.__get_controls__()))
             Handler.equal = False
 
         elif mode == "PUT":
             path = self.path[1:].split("/")
+            store = True
 
             try:
 
@@ -220,22 +239,28 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
                     call(self.__get_amixer_command__() + ["cset", "numid=%s" % path[1], "--", path[2]])
 
                 elif path[0] == "volume" and path[1].isdigit() and int(path[1]) > 0:
-                    """Changes INTEGER channel volumes (PUT /source/<control id:integer>/(<value:number>)+)"""
-                    volumes = []
-                    for volume in path[2:]:
-                        if volume != "" and is_digit(volume):
-                            volumes.append(volume)
-                    command = self.__get_amixer_command__() + ["cset", "numid=%s" % path[1], "--", ",".join(volumes)]
-                    call(command)
+                    """Changes INTEGER channel volumes (PUT /source/<control id:integer>/(<value:number>/)+)"""
+                    self.__change_volume(path[1], path[2:])
+
+                elif path[0] == "equalizer" and path[1].isdigit() and int(path[1]) > 0:
+                    """Changes equalizer channel values (PUT /equalizer/<control id:integer>/(<value:number>/)+)"""
+                    Handler.equal = True
+                    card = Handler.card
+                    Handler.card = None
+                    self.__change_volume(path[1], path[2:])
+                    Handler.equal = False
+                    Handler.card = card
 
                 elif path[0] == "card" and path[1].isdigit():
                     """Changes selected sound card (PUT /card/<card number:integer>)"""
                     Handler.card = int(path[1])
+                    store = False
 
                 else:
                     return
 
-                call(["alsactl", "store"])
+                if store is True:
+                    call(["alsactl", "store"])
             except OSError:
                 pass
 
@@ -255,7 +280,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
                     break
 
             if mime_type is not None:
-                f = open(os.curdir + os.sep + self.htdocs_root + os.sep + self.path)
+                f = open(os.curdir + os.sep + self.htdocs_root + os.sep + self.path, 'rb')
                 self.__send_headers(mime_type)
                 self.wfile.write(f.read())
                 f.close()
@@ -269,6 +294,13 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", content_type)
         self.end_headers()
+
+    def __write_response(self, str):
+        self.wfile.write(str if PYTHON_VERSION is 2 else bytes(str, "utf-8"))
+
+    @staticmethod
+    def __decode_string(str):
+        return str if PYTHON_VERSION is 2 else str.decode("utf-8")
 
 
 def is_digit(n):

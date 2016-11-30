@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import unittest
 import importlib
@@ -110,6 +110,12 @@ class MyTest(unittest.TestCase):
         class MockRequest(object):
             def makefile(self, *args, **kwargs):
                 return IO(b"PUT /volume/9999/0/ HTTP/1.1")
+        self.MockServer(self.amixer.Handler, MockRequest())
+
+    def test_PUT_equalizer(self):
+        class MockRequest(object):
+            def makefile(self, *args, **kwargs):
+                return IO(b"PUT /equalizer/9999/0/ HTTP/1.1")
         self.MockServer(self.amixer.Handler, MockRequest())
 
 
