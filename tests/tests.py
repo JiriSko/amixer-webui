@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 
 import unittest
-execfile('alsamixer-webui.py')
-
 
 try:
     # Python 2.x
     import BaseHTTPServer as server
     from StringIO import StringIO as IO
+    execfile('alsamixer-webui.py')
 except ImportError:
     # Python 3.x
     from http import server
     from io import BytesIO as IO
+    exec(compile(open('alsamixer-webui.py', "rb").read(), 'alsamixer-webui.py', 'exec'))
 
 
 class MyTest(unittest.TestCase):
@@ -81,15 +81,11 @@ class MyTest(unittest.TestCase):
                 return IO(b"GET /equalizer/")
         self.MockServer(Handler, MockRequest())
 
-    def test_amixer_command(self):
-        self.assertEqual(Handler.__get_amixer_command__(), ["amixer"])
-
-    def test_change_card(self):
+    def test_PUT_card(self):
         class MockRequest(object):
             def makefile(self, *args, **kwargs):
                 return IO(b"PUT /card/0/ HTTP/1.1")
         self.MockServer(Handler, MockRequest())
-        self.assertEqual(Handler.__get_amixer_command__(), ["amixer", "-c", "0"])
 
     def test_PUT_control(self):
         class MockRequest(object):
