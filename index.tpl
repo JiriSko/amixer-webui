@@ -45,9 +45,13 @@
 		
 		<div class="mdl-layout__header mdl-layout__header--waterfall">
 			<header class="mdl-layout__header-row">
-				<h1 class="mdl-layout-title">
-					ALSA Mixer WebUI on {$hostname}
-				</h1>
+				<div class="mdl-layout-title">
+					<h1>
+						ALSA Mixer WebUI
+					</h1>
+					<div>{$hostname}</div>
+				</div>
+				<div class="mdl-layout-spacer"></div>
 			</header>
 			<div class="mdl-layout__header-row mdl-cell--hide-desktop mdl-cell--hide-tablet">
 				<div class="mdl-layout-spacer"></div>

@@ -22,6 +22,16 @@ html, body {
 }
 
 
+.mdl-layout-title h1 {
+	font-size: 20px;
+	margin: 0
+}
+
+.mdl-layout-title div {
+	font-size: 14px;
+}
+
+
 .amixer-webui-control {
 	padding-bottom: 0;
 }

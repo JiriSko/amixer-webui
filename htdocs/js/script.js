@@ -251,7 +251,7 @@ var loadCards = function ()
 		}
 		select += '</select></div>';
 
-		document.getElementsByClassName('mdl-layout__header-row')[0].innerHTML += '<div class="mdl-layout-spacer"></div><div class="mdl-cell--hide-phone"><span class="amixer-webui-sound-card__label mdl-cell--hide-tablet">Sound card:</span> ' + select + '</div>';
+		document.getElementsByClassName('mdl-layout__header-row')[0].innerHTML += '<div class="mdl-cell--hide-phone"><span class="amixer-webui-sound-card__label mdl-cell--hide-tablet">Sound card:</span> ' + select + '</div>';
 		document.getElementsByClassName('mdl-layout__header-row')[1].innerHTML += select;
 
 		getJSON('card/?' + Date.now(), function(id)
@@ -263,7 +263,6 @@ var loadCards = function ()
 					cardSelects[i].value = id;
 				}
 			}
-
 		});
 	});
 };
@@ -274,8 +273,11 @@ var loadEqualizer = function ()
 	{
 		if (data && data.length)
 		{
-			document.querySelectorAll('.mdl-layout__header .mdl-layout-spacer')[0].outerHTML += '<button class="mdl-cell--hide-phone mdl-button mdl-js-button mdl-button--icon" title="Equalizer" onclick="document.querySelector(\'dialog\').showModal()"><i class="material-icons">equalizer</i></button>';
-			document.querySelectorAll('.mdl-layout__header .mdl-layout-spacer')[1].outerHTML += '<button class="mdl-button mdl-js-button mdl-button--icon" title="Equalizer" onclick="document.querySelector(\'dialog\').showModal()"><i class="material-icons">equalizer</i></button>';
+			var header = document.querySelectorAll('.mdl-layout__header .mdl-layout-spacer');
+			header[0].outerHTML += '<button class="' + (header.length === 2 ? 'mdl-cell--hide-phone ' : '') + 'mdl-button mdl-js-button mdl-button--icon" title="Equalizer" onclick="document.querySelector(\'dialog\').showModal()"><i class="material-icons">equalizer</i></button>';
+			if (header.length === 2) {
+				header[1].outerHTML += '<button class="mdl-button mdl-js-button mdl-button--icon" title="Equalizer" onclick="document.querySelector(\'dialog\').showModal()"><i class="material-icons">equalizer</i></button>';
+			}
 
 			showEqualizer(data);
 		}
