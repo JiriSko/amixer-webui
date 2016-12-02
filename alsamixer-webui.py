@@ -166,8 +166,8 @@ def cards():
     """Sends list of sound cards (GET /cards) [JSON object - <number:Number>:<name:String>]"""
     return jsonify(app.__get_cards__())
 
-@app.route('/card/<card>')
-def card(name):
+@app.route('/card')
+def card():
     """Sends number of selected sound card (GET /card) [JSON - <Number|null>]"""
     return jsonify(app.card)
 
@@ -215,12 +215,12 @@ def control(control_id, status):
         call(["alsactl", "store"])
     return ''
 
-@app.route('/source/<int:control_id>/<int:item>', methods=['PUT'])
+@app.route('/source/<int:control_id>/<int:item>/', methods=['PUT'])
 def source(control_id, item):
     """Changes active ENUMERATED item (PUT /source/<control id:integer>/<item number:integer>/)"""
     if control_id <= 0:
         return ''
-    call(app.__get_amixer_command__() + ["cset", "numid=%s" % control_id, "--", item])
+    call(app.__get_amixer_command__() + ["cset", "numid=%s" % control_id, "--", str(item)])
     if os.geteuid() == 0:
         call(["alsactl", "store"])
     return ''
