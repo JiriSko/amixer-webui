@@ -13,7 +13,7 @@ import os
 from subprocess import call, Popen, PIPE
 import socket
 import json
-from flask import Flask, jsonify, Response
+from flask import Flask, Response
 import argparse
 
 class Handler(Flask):
@@ -164,12 +164,16 @@ def hostname():
 @app.route('/cards/')
 def cards():
     """Sends list of sound cards (GET /cards) [JSON object - <number:Number>:<name:String>]"""
-    return jsonify(app.__get_cards__())
+    data = json.dumps(app.__get_cards__())
+    resp = Response(response=data, status=200, mimetype="application/json")
+    return resp
 
-@app.route('/card')
+@app.route('/card/')
 def card():
     """Sends number of selected sound card (GET /card) [JSON - <Number|null>]"""
-    return jsonify(app.card)
+    data = json.dumps(app.card)
+    resp = Response(response=data, status=200, mimetype="application/json")
+    return resp
 
 @app.route('/controls/')
 def controls():
