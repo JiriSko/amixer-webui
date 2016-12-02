@@ -18,6 +18,9 @@
 
 path=/home/pi/alsamixer-webui
 port= # if not set will be used default
+if [ -n "$port" ];
+	port="-p $port"
+then
 
 pid="`ps ax | grep alsamixer-webui | grep -v grep | awk '{print $1}'`"
 

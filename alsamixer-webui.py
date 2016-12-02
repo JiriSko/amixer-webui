@@ -13,54 +13,19 @@ import os
 from subprocess import call, Popen, PIPE
 import socket
 import json
+from flask import Flask, jsonify, Response
+import argparse
 
-try:
-    # Python 2.x
-    PYTHON_VERSION = 2
-    import BaseHTTPServer
-    import SocketServer
-except ImportError:
-    # Python 3.x
-    PYTHON_VERSION = 3
-    from http import server as BaseHTTPServer
-    import socketserver as SocketServer
-
-class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
-    static_files = {
-        "htm": "text/html",
-        "html": "text/html",
-        "jpg": "image/jpg",
-        "gif": "image/gif",
-        "png": "image/png",
-        "svg": "image/svg+xml",
-        "js": "application/javascript",
-        "css": "text/css",
-        "ico": "image/x-icon",
-        "json": "application/json",
-        "map": "application/json",
-        "woff": "font/woff",
-        "woff2": "font/woff2",
-    }
-    htdocs_root = "htdocs"
+class Handler(Flask):
 
     server_version = "ALSA Mixer webserver"
     sys_version = ""
 
-    HTTP_OK = 200
-    HTTP_NOT_FOUND = 404
-
     card = None
     equal = False
 
-    def do_GET(self):
-        if self.__dynamic_request__("GET") is not None or self.__static_files__() is not None:
-            return
-        else:
-            self.send_error(self.HTTP_NOT_FOUND, "File Not Found: %s" % self.path[1:])
-
-    def do_PUT(self):
-        if self.__dynamic_request__("PUT") is None:
-            self.send_error(self.HTTP_NOT_FOUND, "File Not Found: %s" % self.path[1:])
+    def __init__(self, *args, **kwargs):
+        Flask.__init__(self, *args, **kwargs)
 
     @staticmethod
     def __get_amixer_command__():
@@ -85,6 +50,20 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
                     return names[i]
 
         return None
+
+    def __get_cards__(self):
+        p1 = Popen(["cat", "/proc/asound/cards"], stdout=PIPE)
+        p2 = Popen(["grep", "\]:"], stdin=p1.stdout, stdout=PIPE)
+        system_cards = p2.communicate()
+
+        cards = {}
+        if p2.returncode == 0:
+            for i in self.__decode_string(system_cards[0]).split("\n")[:-1]:
+                card_number = i.split(" [")[0].strip()
+                card_detail = Popen(["amixer", "-c", card_number, "info"], stdout=PIPE).communicate()[0]
+                cards[card_number] = self.__decode_string(card_detail).split("\n")[1].split(":")[1].replace("'", "").strip()
+
+        return cards
 
     def __get_controls__(self):
         try:
@@ -150,7 +129,13 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         return interfaces
 
-    def __change_volume(self, num_id, volumes_path):
+    def __get_equalizer__(self, *args, **kwargs):
+        self.equal = True
+        data = self.__get_controls__()
+        self.equal = False
+        return data
+
+    def __change_volume__(self, num_id, volumes_path):
         volumes = []
         for volume in volumes_path:
             if volume != "" and is_digit(volume):
@@ -158,150 +143,114 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         command = self.__get_amixer_command__() + ["cset", "numid=%s" % num_id, "--", ",".join(volumes)]
         call(command)
 
-    def __dynamic_request__(self, mode):
-        if self.path == "/" and mode == "GET":
-            """Sends HTML file (GET /)"""
-            self.__send_headers("text/html")
-            f = open("index.tpl")
-            html = f.read().replace("{$hostname}", socket.gethostname())
-            f.close()
-            self.__write_response(html)
+    def __decode_string(self, str):
+        return str.decode("utf-8")
 
-        elif self.path == "/hostname/" and mode == "GET":
-            """Sends server's hostname (GET /hostname) [plain text:String]"""
-            self.__send_headers("text/plain")
-            self.__write_response(socket.gethostname())
+app = Handler(__name__, static_folder='htdocs', static_url_path='')
 
-        elif self.path == "/cards/" and mode == "GET":
-            """Sends list of sound cards (GET /cards) [JSON object - <number:Number>:<name:String>]"""
-            self.__send_headers("application/json")
+@app.route('/')
+def index():
+    """Sends HTML file (GET /)"""
+    f = open("index.tpl")
+    html = f.read().replace("{$hostname}", socket.gethostname())
+    f.close()
+    return html
 
-            p1 = Popen(["cat", "/proc/asound/cards"], stdout=PIPE)
-            p2 = Popen(["grep", "\]:"], stdin=p1.stdout, stdout=PIPE)
-            system_cards = p2.communicate()
+@app.route('/hostname/')
+def hostname():
+    """Sends server's hostname (GET /hostname) [plain text:String]"""
+    return socket.gethostname()
 
-            cards = {}
-            if p2.returncode == 0:
-                for i in self.__decode_string(system_cards[0]).split("\n")[:-1]:
-                    card_number = i.split(" [")[0].strip()
-                    card_detail = self.__decode_string(Popen(["amixer", "-c", card_number, "info"], stdout=PIPE).communicate()[0])
-                    cards[card_number] = card_detail.split("\n")[1].split(":")[1].replace("'", "").strip()
+@app.route('/cards/')
+def cards():
+    """Sends list of sound cards (GET /cards) [JSON object - <number:Number>:<name:String>]"""
+    return jsonify(app.__get_cards__())
 
-            self.__write_response(json.dumps(cards))
+@app.route('/card/<card>')
+def card(name):
+    """Sends number of selected sound card (GET /card) [JSON - <Number|null>]"""
+    return jsonify(app.card)
 
-        elif re.match('/card/(\?.*)?', self.path) and mode == "GET":
-            """Sends number of selected sound card (GET /card) [JSON - <Number|null>]"""
-            self.__send_headers("application/json")
-            self.__write_response(json.dumps(Handler.card))
+@app.route('/controls/')
+def controls():
+    """Sends list of controls of selected sound card (GET /controls/) [JSON - list of objects: {
+    --- common keys ---
+        access: <String>
+        id: <Number>
+        iface: <String>
+        name: <String>
+        type: <ENUMERATED|BOOLEAN|INTEGER:String>
+    --- for type ENUMERATED ---
+        items: <Object {<number:Number>:<name:String>}>
+        values: [<Number> - selected item]
+    --- for type BOOLEAN ---
+        values: [true|false]
+    --- for type INTEGER ---
+        channels: <Array of String> - channel names
+        min: <Number>
+        max: <Number>
+        step: <Number>
+        values: <Array of Number> - channel values (order corresponds with order in `channels` key)
+    }]"""
+    data = json.dumps(app.__get_controls__())
+    resp = Response(response=data, status=200, mimetype="application/json")
+    return resp
 
-        elif re.match('/controls/(\?.*)?', self.path) and mode == "GET":
-            """Sends list of controls of selected sound card (GET /controls/) [JSON - list of objects: {
-            --- common keys ---
-                access: <String>
-                id: <Number>
-                iface: <String>
-                name: <String>
-                type: <ENUMERATED|BOOLEAN|INTEGER:String>
-            --- for type ENUMERATED ---
-                items: <Object {<number:Number>:<name:String>}>
-                values: [<Number> - selected item]
-            --- for type BOOLEAN ---
-                values: [true|false]
-            --- for type INTEGER ---
-                channels: <Array of String> - channel names
-                min: <Number>
-                max: <Number>
-                step: <Number>
-                values: <Array of Number> - channel values (order corresponds with order in `channels` key)
-            }]"""
-            self.__send_headers("application/json")
-            self.__write_response(json.dumps(self.__get_controls__()))
+@app.route('/equalizer/')
+def equalizer():
+    """Sends list of equalizer controls (GET /equalizer) [same as /controls/ but contains only controls of INTEGER type]"""
+    data = json.dumps(app.__get_equalizer__())
+    resp = Response(response=data, status=200, mimetype="application/json")
+    return resp
 
-        elif self.path == "/equalizer/" and mode == "GET":
-            """Sends list of equalizer controls (GET /equalizer) [same as /controls/ but contains only controls of INTEGER type]"""
-            self.__send_headers("application/json")
-            Handler.equal = True
-            self.__write_response(json.dumps(self.__get_controls__()))
-            Handler.equal = False
+@app.route('/control/<int:control_id>/<int:status>/', methods=['PUT'])
+def control(control_id, status):
+    """Turns BOOLEAN control on or off (PUT /control/<control id:integer>/<0|1>/)"""
+    if control_id <= 0:
+        return ''
+    if status != 0 and status != 1:
+        return ''
+    call(app.__get_amixer_command__() + ["cset", "numid=%s" % control_id, "--", 'on' if status == 1 else 'off'])
+    if os.geteuid() == 0:
+        call(["alsactl", "store"])
+    return ''
 
-        elif mode == "PUT":
-            path = self.path[1:].split("/")
-            store = True
+@app.route('/source/<int:control_id>/<int:item>', methods=['PUT'])
+def source(control_id, item):
+    """Changes active ENUMERATED item (PUT /source/<control id:integer>/<item number:integer>/)"""
+    if control_id <= 0:
+        return ''
+    call(app.__get_amixer_command__() + ["cset", "numid=%s" % control_id, "--", item])
+    if os.geteuid() == 0:
+        call(["alsactl", "store"])
+    return ''
 
-            try:
+@app.route('/volume/<int:control_id>/<path:volume_path>', methods=['PUT'])
+def volume(control_id, volume_path):
+    """Changes INTEGER channel volumes (PUT /source/<control id:integer>/(<value:number>/)+)"""
+    app.__change_volume__(control_id, volume_path.split('/'))
+    if os.geteuid() == 0:
+        call(["alsactl", "store"])
+    return ''
 
-                if path[0] == "control" and path[1].isdigit() and int(path[1]) > 0 and (path[2] == "0" or path[2] == "1"):
-                    """Turns BOOLEAN control on or off (PUT /control/<control id:integer>/<0|1>/)"""
-                    call(self.__get_amixer_command__() + ["cset", "numid=%s" % path[1], "--", 'on' if path[2] == '1' else 'off'])
+@app.route('/equalizer/<int:control_id>/<path:level_path>', methods=['PUT'])
+def equalizer2(control_id, level_path):
+    """Changes equalizer channel values (PUT /equalizer/<control id:integer>/(<value:number>/)+)"""
+    app.equal = True
+    card = app.card
+    app.card = None
+    app.__change_volume__(control_id, level_path.split('/'))
+    app.equal = False
+    app.card = card
+    if os.geteuid() == 0:
+        call(["alsactl", "store"])
+    return ''
 
-                elif path[0] == "source" and path[1].isdigit() and int(path[1]) > 0 and path[2].isdigit():
-                    """Changes active ENUMERATED item (PUT /source/<control id:integer>/<item number:integer>/)"""
-                    call(self.__get_amixer_command__() + ["cset", "numid=%s" % path[1], "--", path[2]])
-
-                elif path[0] == "volume" and path[1].isdigit() and int(path[1]) > 0:
-                    """Changes INTEGER channel volumes (PUT /source/<control id:integer>/(<value:number>/)+)"""
-                    self.__change_volume(path[1], path[2:])
-
-                elif path[0] == "equalizer" and path[1].isdigit() and int(path[1]) > 0:
-                    """Changes equalizer channel values (PUT /equalizer/<control id:integer>/(<value:number>/)+)"""
-                    Handler.equal = True
-                    card = Handler.card
-                    Handler.card = None
-                    self.__change_volume(path[1], path[2:])
-                    Handler.equal = False
-                    Handler.card = card
-
-                elif path[0] == "card" and path[1].isdigit():
-                    """Changes selected sound card (PUT /card/<card number:integer>)"""
-                    Handler.card = int(path[1])
-                    store = False
-
-                else:
-                    return
-
-                if store is True:
-                    call(["alsactl", "store"])
-            except OSError:
-                pass
-
-            self.__send_headers("text/html")
-
-        else:
-            return
-
-        return True
-
-    def __static_files__(self):
-        try:
-            mime_type = None
-            for key in self.static_files:
-                if self.path.endswith("." + key):
-                    mime_type = self.static_files[key]
-                    break
-
-            if mime_type is not None:
-                f = open(os.curdir + os.sep + self.htdocs_root + os.sep + self.path, 'rb')
-                self.__send_headers(mime_type)
-                self.wfile.write(f.read())
-                f.close()
-                return True
-
-        except IOError:
-            self.send_error(self.HTTP_NOT_FOUND, "File Not Found: %s" % self.path[1:])
-            return False
-
-    def __send_headers(self, content_type, code=HTTP_OK):
-        self.send_response(code)
-        self.send_header("Content-Type", content_type)
-        self.end_headers()
-
-    def __write_response(self, str):
-        self.wfile.write(str if PYTHON_VERSION is 2 else bytes(str, "utf-8"))
-
-    @staticmethod
-    def __decode_string(str):
-        return str if PYTHON_VERSION is 2 else str.decode("utf-8")
-
+@app.route('/card/<int:card_id>', methods=['PUT'])
+def card2(card_id):
+    """Changes selected sound card (PUT /card/<card number:integer>)"""
+    app.card = card_id
+    return ''
 
 def is_digit(n):
     try:
@@ -313,29 +262,13 @@ def is_digit(n):
 
 if __name__ == "__main__":
 
-    port = 8080
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-l", "--host")
+    parser.add_argument("-p", "--port", type=int, default=8080)
+    parser.add_argument("-d", "--debug", action="store_true")
+    args = parser.parse_args()
 
-    if (len(sys.argv) != 1 and len(sys.argv) != 2) or (len(sys.argv) == 2 and not sys.argv[1].isdigit()):
-        print("Usage: %s <port>" % sys.argv[0])
-        sys.exit(2)
-    elif len(sys.argv) == 2 and sys.argv[1].isdigit():
-        port = int(sys.argv[1])
-
-    server_address = ("", port)
-
-    httpd = SocketServer.TCPServer(server_address, Handler, False)  # Do not automatically bind
-    httpd.allow_reuse_address = True  # Prevent 'Address already in use' on restart
-    httpd.server_bind()  # Manually bind, to support allow_reuse_address
-    httpd.server_activate()
-
-    try:
-        print("Server is running on port %d" % server_address[1])
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        pass
-
-    httpd.server_close()
-    print("Server stopped")
+    app.run(**vars(args))
 
     sys.exit(0)
 
