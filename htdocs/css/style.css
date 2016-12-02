@@ -17,6 +17,21 @@ html, body {
 	}
 }
 
+.mdl-button {
+	margin: 0 8px;
+}
+
+
+.mdl-layout-title h1 {
+	font-size: 20px;
+	margin: 0
+}
+
+.mdl-layout-title div {
+	font-size: 14px;
+}
+
+
 .amixer-webui-control {
 	padding-bottom: 0;
 }
@@ -113,6 +128,79 @@ html, body {
 	color: rgba(0, 0, 0, 0.8);
 }
 
+*::-ms-backdrop, .amixer-webui-sound-card__label {
+	bottom: 28px;
+	position: relative;
+}
+
+
+.mdl-dialog {
+	width: 95%;
+	width: -moz-fit-content;
+	width: -webkit-fit-content;
+	width: fit-content;
+}
+
+
+.amixer-webui-equalizer__lock {
+	position: relative;
+	top: 6px;
+	width: calc(100% - 100px);
+}
+.amixer-webui-equalizer__name {
+	float: left;
+	height: 36px;
+	margin-left: -22px;
+	margin-right: -28px;
+	text-align: center;
+	width: 52px;
+}
+@media (orientation: landscape) and (min-device-width: 800px), (orientation: portrait) and (min-device-width: 800px) {
+	.amixer-webui-equalizer {
+		height: 360px;
+		margin: 0 100px 19px;
+		padding-top: 1px;
+	}
+
+	.amixer-webui-equalizer__container {
+		-webkit-transform: rotate(-90deg);
+		-moz-transform: rotate(-90deg);
+		-ms-transform: rotate(-90deg);
+		-o-transform: rotate(-90deg);
+		transform: rotate(-90deg);
+		margin: -100px auto 0;
+		width: 360px;
+	}
+
+	.amixer-webui-equalizer__name {
+		-webkit-transform: rotate(90deg);
+		-moz-transform: rotate(90deg);
+		-ms-transform: rotate(90deg);
+		-o-transform: rotate(90deg);
+		transform: rotate(90deg);
+	}
+
+	.amixer-webui-equalizer__band {
+		margin: 20px -22px 20px 0;
+	}
+}
+@media (max-device-width: 799px) {
+	.mdl-dialog {
+		min-width: 80%;
+	}
+	.amixer-webui-equalizer {
+		margin-bottom: -19px;
+	}
+
+	.amixer-webui-equalizer__name {
+		margin-top: 8px;
+	}
+
+	.amixer-webui-equalizer__band {
+		margin: 10px -30px 10px 10px;
+	}
+}
+
 
 .amixer-webui-spinner {
 	display: none;
@@ -130,7 +218,7 @@ html, body {
 	margin-top: -28px;
 }
 body.loading {
-	overflow: hidden;   
+	overflow: hidden;
 }
 body.loading .amixer-webui-spinner {
 	display: block;

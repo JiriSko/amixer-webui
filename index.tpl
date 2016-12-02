@@ -9,11 +9,13 @@
 	
 	<link rel="stylesheet" href="css/material.teal-cyan.min.css" />
 	<link rel="stylesheet" href="css/material-icons.css">
+	<link rel="stylesheet" href="css/dialog-polyfill.css">
 	<link rel="stylesheet" href="css/style.css">
-	
+
 	<script src="js/script.js"></script>
 	<script src="js/material.min.js"></script>
-	
+	<script src="js/dialog-polyfill.js"></script>
+
 	<link rel="apple-touch-icon" sizes="57x57" href="icons/apple-touch-icon-57x57.png">
 	<link rel="apple-touch-icon" sizes="60x60" href="icons/apple-touch-icon-60x60.png">
 	<link rel="apple-touch-icon" sizes="72x72" href="icons/apple-touch-icon-72x72.png">
@@ -43,9 +45,13 @@
 		
 		<div class="mdl-layout__header mdl-layout__header--waterfall">
 			<header class="mdl-layout__header-row">
-				<h1 class="mdl-layout-title">
-					ALSA Mixer WebUI on {$hostname}
-				</h1>
+				<div class="mdl-layout-title">
+					<h1>
+						ALSA Mixer WebUI
+					</h1>
+					<div>{$hostname}</div>
+				</div>
+				<div class="mdl-layout-spacer"></div>
 			</header>
 			<div class="mdl-layout__header-row mdl-cell--hide-desktop mdl-cell--hide-tablet">
 				<div class="mdl-layout-spacer"></div>
@@ -57,6 +63,12 @@
 		</main>
 	
 	</div>
+
+	<dialog class="mdl-dialog">
+		<h4 class="mdl-dialog__title"></h4>
+		<div class="mdl-dialog__content"></div>
+		<div class="mdl-dialog__actions"></div>
+	</dialog>
 	
 	<div class="amixer-webui-spinner">
 		<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active"></div>
