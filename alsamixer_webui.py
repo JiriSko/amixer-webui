@@ -10,6 +10,7 @@
 import sys
 import re
 import os
+import errno
 from subprocess import call, Popen, PIPE
 import socket
 import json
@@ -53,10 +54,14 @@ class Handler(Flask):
 
     def __get_cards__(self):
         system_cards = []
-        with open("/proc/asound/cards", 'rt') as f:
-            for l in f.readlines():
-                if ']:' in l:
-                    system_cards.append(l.strip())
+        try:
+            with open("/proc/asound/cards", 'rt') as f:
+                for l in f.readlines():
+                    if ']:' in l:
+                        system_cards.append(l.strip())
+        except IOError as e:
+            if e.errno != errno.ENOENT:
+                raise e
 
         cards = {}
         for i in system_cards:
