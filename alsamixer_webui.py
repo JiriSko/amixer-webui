@@ -52,16 +52,17 @@ class Handler(Flask):
         return None
 
     def __get_cards__(self):
-        p1 = Popen(["cat", "/proc/asound/cards"], stdout=PIPE)
-        p2 = Popen(["grep", "\]:"], stdin=p1.stdout, stdout=PIPE)
-        system_cards = p2.communicate()
+        system_cards = []
+        with open("/proc/asound/cards", 'rt') as f:
+            for l in f.readlines():
+                if ']:' in l:
+                    system_cards.append(l.strip())
 
         cards = {}
-        if p2.returncode == 0:
-            for i in self.__decode_string(system_cards[0]).split("\n")[:-1]:
-                card_number = i.split(" [")[0].strip()
-                card_detail = Popen(["amixer", "-c", card_number, "info"], stdout=PIPE).communicate()[0]
-                cards[card_number] = self.__decode_string(card_detail).split("\n")[1].split(":")[1].replace("'", "").strip()
+        for i in system_cards:
+            card_number = i.split(" [")[0].strip()
+            card_detail = Popen(["amixer", "-c", card_number, "info"], stdout=PIPE).communicate()[0]
+            cards[card_number] = self.__decode_string(card_detail).split("\n")[1].split(":")[1].replace("'", "").strip()
 
         return cards
 
