@@ -29,7 +29,7 @@ class AlsamixerTestCase(unittest.TestCase):
     def test_GET_hostname(self):
         rv = self.app.get('/hostname/')
         assert rv.status_code == 200
-        assert rv.data == socket.gethostname()
+        assert rv.data.decode('ascii') == socket.gethostname()
 
     def test_GET_card(self):
         rv = self.app.get('/card/')
