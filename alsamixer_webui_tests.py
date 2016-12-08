@@ -36,7 +36,7 @@ class AlsamixerTestCase(unittest.TestCase):
     def test_GET_card(self):
         rv = self.app.get('/card/')
         assert rv.status_code == 200
-        self.assertEqual(rv.data, "null")
+        self.assertEqual(rv.data, b'null')
 
     def test_GET_cards(self):
         rv = self.app.get('/cards/')
