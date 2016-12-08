@@ -222,7 +222,7 @@ var changeVolume = function(id, i, value)
 
 var changeCard = function (id)
 {
-	sendRequest('PUT', 'card/' + id);
+	sendRequest('PUT', 'card/' + id + '/');
 	document.getElementById('controls').innerHTML = '';
 	loadControls();
 

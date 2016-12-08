@@ -2,6 +2,7 @@ import unittest
 import socket
 import alsamixer_webui
 
+
 class AlsamixerTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -9,6 +10,7 @@ class AlsamixerTestCase(unittest.TestCase):
 
     def test_GET_index(self):
         rv = self.app.get('/')
+        assert rv.status_code == 200
 
     def test_GET_not_found(self):
         rv = self.app.get('/helloWorld')
@@ -34,6 +36,7 @@ class AlsamixerTestCase(unittest.TestCase):
     def test_GET_card(self):
         rv = self.app.get('/card/')
         assert rv.status_code == 200
+        self.assertEqual(rv.data, "null")
 
     def test_GET_cards(self):
         rv = self.app.get('/cards/')
@@ -48,24 +51,16 @@ class AlsamixerTestCase(unittest.TestCase):
         assert rv.status_code == 200
 
     def test_PUT_card(self):
-        rv = self.app.put('/card/0')
+        rv = self.app.put('/card/0/')
         assert rv.status_code == 200
 
     def test_PUT_control(self):
         rv = self.app.put('/control/9999/0/')
         assert rv.status_code == 200
-        #class MockRequest(object):
-        #    def makefile(self, *args, **kwargs):
-        #        return IO(b"PUT /control/9999/0/ HTTP/1.1")
-        #self.MockServer(Handler, MockRequest())
 
     def test_PUT_source(self):
         rv = self.app.put('/source/9999/0/')
         assert rv.status_code == 200
-        #class MockRequest(object):
-        #    def makefile(self, *args, **kwargs):
-        #        return IO(b"PUT /source/9999/0/ HTTP/1.1")
-        #self.MockServer(Handler, MockRequest())
 
     def test_PUT_volume(self):
         rv = self.app.put('/volume/9999/0/')

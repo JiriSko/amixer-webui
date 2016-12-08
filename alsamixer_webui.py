@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# File:    alsamixer-webui.py
+# File:    alsamixer_webui.py
 # Date:    24. 1. 2016
 # Author:  Jiri Skorpil <jiri.sko@gmail.com>
 # Desc.:   ALSA Mixer WebUI - main application
@@ -17,10 +17,8 @@ import json
 from flask import Flask, Response
 import argparse
 
-class Handler(Flask):
 
-    server_version = "ALSA Mixer webserver"
-    sys_version = ""
+class Handler(Flask):
 
     card = None
     equal = False
@@ -28,12 +26,11 @@ class Handler(Flask):
     def __init__(self, *args, **kwargs):
         Flask.__init__(self, *args, **kwargs)
 
-    @staticmethod
-    def __get_amixer_command__():
+    def __get_amixer_command__(self):
         command = ["amixer"]
-        if Handler.card is not None:
-            command += ["-c", "%d" % Handler.card]
-        if Handler.equal is True:
+        if self.card is not None:
+            command += ["-c", "%d" % self.card]
+        if self.equal is True:
             command += ["-D", "equal"]
         return command
 
@@ -77,7 +74,8 @@ class Handler(Flask):
             amixer_channels = Popen(["grep", "-e", "control", "-e", "channels"], stdin=amixer.stdout, stdout=PIPE)
             amixer_chandesc = self.__decode_string(amixer_channels.communicate()[0]).split("Simple mixer control ")[1:]
 
-            amixer_contents = self.__decode_string(Popen(self.__get_amixer_command__() + ["contents"], stdout=PIPE).communicate()[0])
+            amixer_contents = self.__decode_string(
+                Popen(self.__get_amixer_command__() + ["contents"], stdout=PIPE).communicate()[0])
         except OSError:
             return []
 
@@ -135,7 +133,7 @@ class Handler(Flask):
 
         return interfaces
 
-    def __get_equalizer__(self, *args, **kwargs):
+    def __get_equalizer__(self):
         self.equal = True
         data = self.__get_controls__()
         self.equal = False
@@ -149,10 +147,21 @@ class Handler(Flask):
         command = self.__get_amixer_command__() + ["cset", "numid=%s" % num_id, "--", ",".join(volumes)]
         call(command)
 
-    def __decode_string(self, str):
-        return str.decode("utf-8")
+    @staticmethod
+    def __decode_string(string):
+        return string.decode("utf-8")
+
+
+def is_digit(n):
+    try:
+        int(n)
+        return True
+    except ValueError:
+        return False
+
 
 app = Handler(__name__, static_folder='htdocs', static_url_path='')
+
 
 @app.route('/')
 def index():
@@ -162,28 +171,32 @@ def index():
     f.close()
     return html
 
+
 @app.route('/hostname/')
-def hostname():
-    """Sends server's hostname (GET /hostname) [plain text:String]"""
+def get_hostname():
+    """Sends server's hostname [plain text:String]"""
     return socket.gethostname()
 
+
 @app.route('/cards/')
-def cards():
-    """Sends list of sound cards (GET /cards) [JSON object - <number:Number>:<name:String>]"""
+def get_cards():
+    """Sends list of sound cards [JSON object - <number:Number>:<name:String>]"""
     data = json.dumps(app.__get_cards__())
     resp = Response(response=data, status=200, mimetype="application/json")
     return resp
 
+
 @app.route('/card/')
-def card():
-    """Sends number of selected sound card (GET /card) [JSON - <Number|null>]"""
+def get_card():
+    """Sends number of selected sound card [JSON - <Number|null>]"""
     data = json.dumps(app.card)
     resp = Response(response=data, status=200, mimetype="application/json")
     return resp
 
+
 @app.route('/controls/')
-def controls():
-    """Sends list of controls of selected sound card (GET /controls/) [JSON - list of objects: {
+def get_controls():
+    """Sends list of controls of selected sound card [JSON - list of objects: {
     --- common keys ---
         access: <String>
         id: <Number>
@@ -206,16 +219,18 @@ def controls():
     resp = Response(response=data, status=200, mimetype="application/json")
     return resp
 
+
 @app.route('/equalizer/')
-def equalizer():
-    """Sends list of equalizer controls (GET /equalizer) [same as /controls/ but contains only controls of INTEGER type]"""
+def get_equalizer():
+    """Sends list of equalizer controls [same as /controls/ but contains only controls of INTEGER type]"""
     data = json.dumps(app.__get_equalizer__())
     resp = Response(response=data, status=200, mimetype="application/json")
     return resp
 
+
 @app.route('/control/<int:control_id>/<int:status>/', methods=['PUT'])
-def control(control_id, status):
-    """Turns BOOLEAN control on or off (PUT /control/<control id:integer>/<0|1>/)"""
+def put_control(control_id, status):
+    """Turns BOOLEAN control on or off"""
     if control_id <= 0:
         return ''
     if status != 0 and status != 1:
@@ -225,9 +240,10 @@ def control(control_id, status):
         call(["alsactl", "store"])
     return ''
 
+
 @app.route('/source/<int:control_id>/<int:item>/', methods=['PUT'])
-def source(control_id, item):
-    """Changes active ENUMERATED item (PUT /source/<control id:integer>/<item number:integer>/)"""
+def put_source(control_id, item):
+    """Changes active ENUMERATED item"""
     if control_id <= 0:
         return ''
     call(app.__get_amixer_command__() + ["cset", "numid=%s" % control_id, "--", str(item)])
@@ -235,17 +251,19 @@ def source(control_id, item):
         call(["alsactl", "store"])
     return ''
 
+
 @app.route('/volume/<int:control_id>/<path:volume_path>', methods=['PUT'])
-def volume(control_id, volume_path):
-    """Changes INTEGER channel volumes (PUT /source/<control id:integer>/(<value:number>/)+)"""
+def put_volume(control_id, volume_path):
+    """Changes INTEGER channel volumes"""
     app.__change_volume__(control_id, volume_path.split('/'))
     if os.geteuid() == 0:
         call(["alsactl", "store"])
     return ''
 
+
 @app.route('/equalizer/<int:control_id>/<path:level_path>', methods=['PUT'])
-def equalizer2(control_id, level_path):
-    """Changes equalizer channel values (PUT /equalizer/<control id:integer>/(<value:number>/)+)"""
+def put_equalizer(control_id, level_path):
+    """Changes equalizer channel values"""
     app.equal = True
     card = app.card
     app.card = None
@@ -256,22 +274,23 @@ def equalizer2(control_id, level_path):
         call(["alsactl", "store"])
     return ''
 
-@app.route('/card/<int:card_id>', methods=['PUT'])
-def card2(card_id):
-    """Changes selected sound card (PUT /card/<card number:integer>)"""
+
+@app.route('/card/<int:card_id>/', methods=['PUT'])
+def put_card(card_id):
+    """Changes selected sound card"""
     app.card = card_id
     return ''
 
-def is_digit(n):
-    try:
-        int(n)
-        return True
-    except ValueError:
-        return False
+
+@app.after_request
+def set_server_header(response):
+    response.headers["Server"] = "ALSA Mixer webserver"
+    return response
+
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--host")
+    parser.add_argument("-l", "--host", type=str, default='0.0.0.0')
     parser.add_argument("-p", "--port", type=int, default=8080)
     parser.add_argument("-d", "--debug", action="store_true")
     args = parser.parse_args()
@@ -284,4 +303,4 @@ if __name__ == "__main__":
 
     sys.exit(0)
 
-# end of alsamixer-webui.py
+# end of alsamixer_webui.py

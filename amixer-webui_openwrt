@@ -13,11 +13,21 @@ STOP=0
 
 path=/root/alsamixer-webui
 port= # if not set will be used default
+host= # if not set will be used default
+
+if [ -n "$port" ]
+then
+	port="-p $port"
+fi
+if [ -n "$host" ]
+then
+    host="-l $host";
+fi
 
 alsa_path=/var/lib/alsa
 asound=asound.state
 
-pid="`ps w | grep alsamixer-webui | grep -v grep | awk '{print $1}'`"
+pid="`ps w | grep alsamixer_webui | grep -v grep | awk '{print $1}'`"
 
 start() {
     if [ "$pid" != "" ]
@@ -25,7 +35,7 @@ start() {
       echo "alsamixer-webui already running"
     else
       cd $path
-      $path/alsamixer-webui.py $port >/dev/null 2>&1 &
+      $path/alsamixer_webui.py $port $host >/dev/null 2>&1 &
       if [ ! -f "$alsa_path/$asound" ]; then
         mkdir $alsa_path
         if [ -f "$path/$asound" ]; then

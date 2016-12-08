@@ -18,11 +18,18 @@
 
 path=/home/pi/alsamixer-webui
 port= # if not set will be used default
-if [ -n "$port" ];
-	port="-p $port"
-then
+host= # if not set will be used default
 
-pid="`ps ax | grep alsamixer-webui | grep -v grep | awk '{print $1}'`"
+if [ -n "$port" ]
+then
+	port="-p $port"
+fi
+if [ -n "$host" ]
+then
+    host="-l $host";
+fi
+
+pid="`ps ax | grep alsamixer_webui | grep -v grep | awk '{print $1}'`"
 
 case "$1" in
   start)
@@ -30,7 +37,7 @@ case "$1" in
     then
       echo "alsamixer-webui already running"
     else
-      $path/alsamixer-webui.py $port >/dev/null 2>&1 &
+      $path/alsamixer_webui.py $port $host >/dev/null 2>&1 &
       echo "alsamixer-webui started"
     fi
     ;;

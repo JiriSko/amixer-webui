@@ -12,7 +12,8 @@ There exists also [client for Android](https://github.com/JiriSko/amixer-webui-a
 
 ## Server requirements
 
-- python2.6 and newer; or python3.2 and newer
+- python2.6 and newer; or python3.3 and newer
+- python-pip as prerequisites for Flask (`pip install flask`)
 - alsa-utils
 - alsaequal (OPTIONAL: for equalizer)
 
@@ -39,12 +40,12 @@ $ git clone https://github.com/JiriSko/amixer-webui.git
 ## Synopsis
 
 ```
-alsamixer-webui.py <port=8080>
+alsamixer_webui.py [-p <port=8080>] [-l <host=0.0.0.0>]
 ```
 
 ## Install on desktop distributions
 
-You can use init.d script `amixer-webui` (do not forget to set correct [path](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui#L19) and optionally [port](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui#L20)):
+You can use init.d script `amixer-webui` (do not forget to set correct [path](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui#L19) and optionally [port](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui#L20) and/or [host](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui#L21)):
 
 ```bash
 sudo cp amixer-webui /etc/init.d/amixer-webui
