@@ -26,8 +26,8 @@ uninstall:
 	rm /etc/init.d/amixer-webui
 	rm /etc/amixer-webui.conf
 
-.PHONY: deb
-deb:
+.PHONE: package
+package:
 	mkdir -p ${BUILD_PATH}${INSTALL_PATH}
 	cp -r htdocs ${BUILD_PATH}${INSTALL_PATH}/
 	cp alsamixer_webui.py ${BUILD_PATH}${INSTALL_PATH}/
@@ -36,6 +36,9 @@ deb:
 	cp index.tpl ${BUILD_PATH}${INSTALL_PATH}/
 	cp logo.svg ${BUILD_PATH}${INSTALL_PATH}/
 	cp README.md ${BUILD_PATH}${INSTALL_PATH}/
+
+.PHONY: deb
+deb: package
 	touch ${BUILD_PATH}/DEBIAN/md5sums
 	cd ${BUILD_PATH} && find * ! -path "DEBIAN/*" -type f -exec md5sum {} \; >> DEBIAN/md5sums
 	cp production/deb-package/DEBIAN/control production/control
