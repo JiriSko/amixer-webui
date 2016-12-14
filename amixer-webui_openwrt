@@ -11,18 +11,7 @@ EXTRA_COMMANDS="status"
 START=99
 STOP=0
 
-path=/root/alsamixer-webui
-port= # if not set will be used default
-host= # if not set will be used default
-
-if [ -n "$port" ]
-then
-	port="-p $port"
-fi
-if [ -n "$host" ]
-then
-    host="-l $host";
-fi
+path=/usr/share/amixer-webui
 
 alsa_path=/var/lib/alsa
 asound=asound.state
@@ -32,12 +21,14 @@ pid="`ps w | grep alsamixer_webui | grep -v grep | awk '{print $1}'`"
 start() {
     if [ "$pid" != "" ]
     then
-      echo "alsamixer-webui already running"
+      echo "amixer-webui already running"
     else
       cd $path
-      $path/alsamixer_webui.py $port $host >/dev/null 2>&1 &
+      $path/alsamixer_webui.py >/dev/null 2>&1 &
       if [ ! -f "$alsa_path/$asound" ]; then
-        mkdir $alsa_path
+        if [ ! -d "$alsa_path" ]; then
+            mkdir $alsa_path
+        fi
         if [ -f "$path/$asound" ]; then
           cp $path/$asound $alsa_path/$asound
           alsactl restore
@@ -45,24 +36,26 @@ start() {
           alsactl init
         fi
       fi
-      echo "alsamixer-webui started"
+      echo "amixer-webui started"
     fi
 }
 stop() {
     if [ "$pid" != "" ]
     then
       kill -9 $pid > /dev/null 2>&1
-      cp $alsa_path/$asound $path/$asound
-      echo "alsamixer-webui stopped"
+      if [ -f "$path/$asound" ]; then
+        cp $alsa_path/$asound $path/$asound
+      fi
+      echo "amixer-webui stopped"
     else
-      echo "alsamixer-webui is not running"
+      echo "amixer-webui is not running"
     fi
 }
 status() {
     if [ "$pid" != "" ]
     then
-      echo "alsamixer-webui is running"
+      echo "amixer-webui is running"
     else
-      echo "alsamixer-webui is not running"
+      echo "amixer-webui is not running"
     fi
 }

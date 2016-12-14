@@ -27,7 +27,7 @@ case "$1" in
   start)
     if [ "$pid" != "" ]
     then
-      echo "alsamixer-webui already running"
+      echo "amixer-webui already running"
     else
       cd $path
       if [ -z "$user" ]
@@ -36,7 +36,7 @@ case "$1" in
       else
         su $user - -c "$startCommand >/dev/null 2>&1 &"
       fi
-      echo "alsamixer-webui started"
+      echo "amixer-webui started"
     fi
     ;;
   stop)
@@ -52,17 +52,17 @@ case "$1" in
       else
         su $user - -c "kill -9 $pid > /dev/null 2>&1"
       fi
-      echo "alsamixer-webui stopped"
+      echo "amixer-webui stopped"
     else
-      echo "alsamixer-webui is not running"
+      echo "amixer-webui is not running"
     fi
     ;;
   status)
     if [ "$pid" != "" ]
     then
-      echo "alsamixer-webui is running"
+      echo "amixer-webui is running"
     else
-      echo "alsamixer-webui is not running"
+      echo "amixer-webui is not running"
     fi
     ;;
   restart)
