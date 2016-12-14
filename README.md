@@ -43,7 +43,7 @@ $ git clone https://github.com/JiriSko/amixer-webui.git
 alsamixer_webui.py [-p <port=8080>] [-l <host=0.0.0.0>]
 ```
 
-Script loads configuration file `/etc/amixer.conf` if exists.
+Script loads configuration file `/etc/amixer-webui.conf` if exists.
 
 ## Install on desktop distributions
 
