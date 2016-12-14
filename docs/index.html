@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="ALSA Mixer WebUI : Web application for control ALSA volume">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>ALSA Mixer WebUI</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/JiriSko/amixer-webui">View on GitHub</a>
+
+          <h1 id="project_title">ALSA Mixer WebUI</h1>
+          <h2 id="project_tagline">Web application for control ALSA volume</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/JiriSko/amixer-webui/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/JiriSko/amixer-webui/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+          <a id="amixer-webui" class="anchor" href="#amixer-webui" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>amixer-webui</h1>
+
+        <p><a href="https://travis-ci.org/JiriSko/amixer-webui"><img src="https://travis-ci.org/JiriSko/amixer-webui.svg?branch=master" alt="Build Status"></a>
+          <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" alt="License"></a></p>
+
+        <p>Client-server application for easy configuration of ALSA volume controls using network device (smartphone, tablet, PC, etc.).</p>
+
+        <p>There exists also <a href="https://github.com/JiriSko/amixer-webui-android">client for Android</a>.</p>
+
+        <p><a href="screenshot.png"><img src="screenshot.png" alt="Screenshot"></a></p>
+
+        <h2>
+          <a id="server-requirements" class="anchor" href="#server-requirements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Server requirements</h2>
+
+        <ul>
+          <li>python2.6 and newer; or python3.3 and newer</li>
+          <li>python-pip as prerequisites for <a href="http://flask.pocoo.org/">Flask</a> (<code>pip install flask</code>)</li>
+          <li>alsa-utils</li>
+          <li>alsaequal (OPTIONAL: for equalizer)</li>
+        </ul>
+
+        <h2>
+          <a id="supported-browsers" class="anchor" href="#supported-browsers" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Supported browsers</h2>
+
+        <ul>
+          <li>Internet Explorer</li>
+          <li>Edge</li>
+          <li>Chrome</li>
+          <li>Firefox</li>
+          <li>Opera</li>
+          <li>Chrome (Android)</li>
+        </ul>
+
+        <h2>
+          <a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h2>
+
+        <h3>
+          <a id="download--clone" class="anchor" href="#download--clone" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Download / Clone</h3>
+
+        <p>You can download <a href="https://github.com/JiriSko/amixer-webui/releases/latest">latest release</a> as .deb package or source code. Alternatively clone whole repository:</p>
+
+        <div class="highlight highlight-source-shell"><pre>$ git clone https://github.com/JiriSko/amixer-webui.git</pre></div>
+
+        <h2>
+          <a id="synopsis" class="anchor" href="#synopsis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Synopsis</h2>
+
+        <pre><code>alsamixer_webui.py [-p &lt;port=8080&gt;] [-l &lt;host=0.0.0.0&gt;]
+</code></pre>
+
+        <p>Script loads configuration file <code>/etc/amixer.conf</code> if exists.</p>
+
+        <h2>
+          <a id="install-on-desktop-distributions" class="anchor" href="#install-on-desktop-distributions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install on desktop distributions</h2>
+
+        <h3>
+          <a id="for-debian-based-distributions" class="anchor" href="#for-debian-based-distributions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>For Debian based distributions:</h3>
+
+        <p>Install <a href="https://github.com/JiriSko/amixer-webui/releases/latest">latest</a> .deb package and then enable &amp; start amixer service:</p>
+
+        <div class="highlight highlight-source-shell"><pre>sudo update-rc.d amixer-webui defaults
+sudo /etc/init.d/amixer-webui start</pre></div>
+
+        <h3>
+          <a id="other-distributions" class="anchor" href="#other-distributions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Other distributions:</h3>
+
+        <p>At first install app as root:</p>
+
+        <div class="highlight highlight-source-shell"><pre>make install</pre></div>
+
+        <p>And then enable and start amixer-webui service.</p>
+
+        <hr>
+
+        <p>Alternatively it can be run from anywhere e.g. in background from <code>rc.local</code>.</p>
+
+        <h2>
+          <a id="install-on-openwrt" class="anchor" href="#install-on-openwrt" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install on OpenWrt</h2>
+
+        <p>Install app as root using <code>./openwrt.sh install</code> command and then enable &amp; start amixer-webui service:</p>
+
+        <div class="highlight highlight-source-shell"><pre>/etc/init.d/amixer-webui <span class="pl-c1">enable</span>
+/etc/init.d/amixer-webui start</pre></div>
+
+        <p>Script automatically restores ALSA settings after reboot.</p>
+
+        <h2>
+          <a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+        <p>The application is released under <a href="LICENSE">The MIT License</a>. Software uses <a href="https://github.com/google/material-design-lite">Material Design Lite</a> library which is licensed under an <a href="https://github.com/google/material-design-lite/blob/master/LICENSE">Apache-2</a> license.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">ALSA Mixer WebUI maintained by <a href="https://github.com/JiriSko">JiriSko</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>

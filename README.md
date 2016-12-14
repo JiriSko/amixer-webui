@@ -7,7 +7,7 @@ Client-server application for easy configuration of ALSA volume controls using n
 
 There exists also [client for Android](https://github.com/JiriSko/amixer-webui-android).
 
-[![Screenshot](screenshot.png)](screenshot.png)
+[![Screenshot](docs/screenshot.png)](docs/screenshot.png)
 
 
 ## Server requirements
