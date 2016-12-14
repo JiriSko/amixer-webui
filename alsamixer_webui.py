@@ -16,6 +16,17 @@ import socket
 import json
 from flask import Flask, Response
 import argparse
+try:
+    # Python 2.x
+    import ConfigParser
+except ImportError:
+    # Python 3.x
+    import configparser as ConfigParser
+
+
+CONFIG_FILE = '/etc/amixer-webui.conf'
+DEFAULT_HOST = '0.0.0.0'
+DEFAULT_PORT = '8080'
 
 
 class Handler(Flask):
@@ -290,10 +301,28 @@ def set_server_header(response):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--host", type=str, default='0.0.0.0')
-    parser.add_argument("-p", "--port", type=int, default=8080)
+    parser.add_argument("-l", "--host", type=str)
+    parser.add_argument("-p", "--port", type=int)
     parser.add_argument("-d", "--debug", action="store_true")
     args = parser.parse_args()
+
+    if os.path.isfile(CONFIG_FILE):
+        config = ConfigParser.RawConfigParser()
+        config.read(CONFIG_FILE)
+
+        if args.host is None:
+            args.host = config.get('amixer-webui', 'host')
+
+        if args.port is None:
+            port = config.get('amixer-webui', 'port')
+            if is_digit(port):
+                args.port = int(port)
+
+    if args.host == "":
+        args.host = DEFAULT_HOST
+
+    if args.port is None:
+        args.port = DEFAULT_PORT
 
     app.run(**vars(args))
 

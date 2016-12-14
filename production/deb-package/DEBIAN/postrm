@@ -1,0 +1,12 @@
+#!/bin/sh
+
+case "$1" in
+  remove)
+    rm /etc/init.d/amixer-webui
+    ;;
+  purge)
+    rm /etc/amixer-webui.conf 2>/dev/null
+    ;;
+esac
+
+exit 0

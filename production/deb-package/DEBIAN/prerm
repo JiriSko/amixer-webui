@@ -1,0 +1,10 @@
+#!/bin/sh
+
+path=/usr/share/amixer-webui
+
+if diff $path/amixer-webui.conf /etc/amixer-webui.conf > /dev/null  2>&1
+then
+	rm /etc/amixer-webui.conf
+fi
+
+exit 0

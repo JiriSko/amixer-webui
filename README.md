@@ -13,7 +13,7 @@ There exists also [client for Android](https://github.com/JiriSko/amixer-webui-a
 ## Server requirements
 
 - python2.6 and newer; or python3.3 and newer
-- python-pip as prerequisites for Flask (`pip install flask`)
+- python-pip as prerequisites for [Flask](http://flask.pocoo.org/) (`pip install flask`)
 - alsa-utils
 - alsaequal (OPTIONAL: for equalizer)
 
@@ -31,7 +31,7 @@ There exists also [client for Android](https://github.com/JiriSko/amixer-webui-a
 
 ### Download / Clone
 
-You can download [latest release](https://github.com/JiriSko/amixer-webui/releases/latest) or alternatively clone whole repository:
+You can download [latest release](https://github.com/JiriSko/amixer-webui/releases/latest) as .deb package or source code. Alternatively clone whole repository:
 
 ```bash
 $ git clone https://github.com/JiriSko/amixer-webui.git
@@ -43,24 +43,37 @@ $ git clone https://github.com/JiriSko/amixer-webui.git
 alsamixer_webui.py [-p <port=8080>] [-l <host=0.0.0.0>]
 ```
 
+Script loads configuration file `/etc/amixer.conf` if exists.
+
 ## Install on desktop distributions
 
-You can use init.d script `amixer-webui` (do not forget to set correct [path](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui#L19) and optionally [port](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui#L20) and/or [host](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui#L21)):
+### For Debian based distributions:
+
+Install [latest](https://github.com/JiriSko/amixer-webui/releases/latest) .deb package and then enable & start amixer service:
 
 ```bash
-sudo cp amixer-webui /etc/init.d/amixer-webui
 sudo update-rc.d amixer-webui defaults
 sudo /etc/init.d/amixer-webui start
 ```
 
-or simply run it in background e.g. from `rc.local`.
+### Other distributions:
+
+At first install app as root:
+```bash
+make install
+```
+
+And then enable and start amixer-webui service.
+
+----------
+
+Alternatively it can be run from anywhere e.g. in background from `rc.local`.
 
 ## Install on OpenWrt
 
-Similarly set correct [path](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui_openwrt#L14) and [port](https://github.com/JiriSko/amixer-webui/blob/master/amixer-webui_openwrt#L15) and then run:
+Install app as root using `./openwrt.sh install` command and then enable & start amixer-webui service:
 
 ```bash
-cp amixer-webui_openwrt /etc/init.d/amixer-webui
 /etc/init.d/amixer-webui enable
 /etc/init.d/amixer-webui start
 ```

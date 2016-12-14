@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # File:    /etc/init.d/amixer-webui
-# Date:    22. 1. 2015
+# Date:    22. 1. 2016
 # Author:  Jiri Skorpil <jiri.sko@gmail.com>
 # Desc.:   System V init script for start/stop ALSA Mixer WebUI webserver
 #
@@ -16,18 +16,10 @@
 # Description:       ALSA Mixer WebUI webserver
 ### END INIT INFO
 
-path=/home/pi/alsamixer-webui
-port= # if not set will be used default
-host= # if not set will be used default
+user= # user which will run the webserver (if not set will be used user who ran this script)
+path=/usr/share/amixer-webui
 
-if [ -n "$port" ]
-then
-	port="-p $port"
-fi
-if [ -n "$host" ]
-then
-    host="-l $host";
-fi
+startCommand="$path/alsamixer_webui.py"
 
 pid="`ps ax | grep alsamixer_webui | grep -v grep | awk '{print $1}'`"
 
@@ -37,14 +29,29 @@ case "$1" in
     then
       echo "alsamixer-webui already running"
     else
-      $path/alsamixer_webui.py $port $host >/dev/null 2>&1 &
+      cd $path
+      if [ -z "$user" ]
+      then
+        $startCommand >/dev/null 2>&1 &
+      else
+        su $user - -c "$startCommand >/dev/null 2>&1 &"
+      fi
       echo "alsamixer-webui started"
     fi
     ;;
   stop)
     if [ "$pid" != "" ]
     then
-      sudo kill -9 $pid > /dev/null 2>&1
+      author="`ps -f -p $pid | tail -1 | awk '{print $1}'`"
+      if [ "$user" == "$author" ] || ([ -z "$user" ] && [ "$author" == "`whoami`" ])
+      then
+        kill -9 $pid > /dev/null 2>&1
+      elif [ "$author" == "root" ]
+      then
+        sudo kill -9 $pid > /dev/null 2>&1
+      else
+        su $user - -c "kill -9 $pid > /dev/null 2>&1"
+      fi
       echo "alsamixer-webui stopped"
     else
       echo "alsamixer-webui is not running"
@@ -63,7 +70,7 @@ case "$1" in
     /etc/init.d/amixer-webui start
     ;;
   *)
-    echo "Usage: /etc/init.d/alsamixer-webui {start|stop|restart|status}"
+    echo "Usage: $0 {start|stop|restart|status}"
     exit 1
     ;;
 esac

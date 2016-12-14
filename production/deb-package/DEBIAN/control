@@ -1,0 +1,10 @@
+Package: amixer-webui
+Version: 0.3.0
+Maintainer: Jiri Skorpil <jiri.sko@gmail.com>
+Section: sound
+Architecture: all
+Priority: optional
+Suggests: libasound2-plugin-equal (>=0.6)
+Depends: alsa-utils (>=1.0.25), python2.6 (>=2.6) | python2.7 (>=2.7) | python3 (>=3.3)
+Description: Web application for control ALSA volume
+ Client-server application for easy configuration of ALSA volume controls using network device (smartphone, tablet, PC, etc.).
