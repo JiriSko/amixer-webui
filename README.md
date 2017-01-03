@@ -49,7 +49,7 @@ Script loads configuration file `/etc/amixer-webui.conf` if exists.
 
 ### For Debian based distributions:
 
-Install [latest](https://github.com/JiriSko/amixer-webui/releases/latest) .deb package and then enable & start amixer service:
+Install [latest](https://github.com/JiriSko/amixer-webui/releases/latest) .deb package and then enable & start amixer-webui service:
 
 ```bash
 sudo update-rc.d amixer-webui defaults
