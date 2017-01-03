@@ -188,9 +188,9 @@ var changeVolume = function(id, i, value)
 		var bgFlexLower = document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[0].style.flex;
 		var bgFlexUpper = document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[1].style.flex;
 	}
-	
+
 	if ((document.getElementById(id + '_lock') && document.getElementById(id + '_lock').checked)
-		|| (id.substr(0, 1) === 'e' && document.getElementById('equalizer_lock').checked)) {
+		|| (typeof id === 'string' && id.substr(0, 1) === 'e' && document.getElementById('equalizer_lock').checked)) {
 		//console.log("Changed volume for all channel on control [id=" + id + "] to value: " + value)
 		var volumeElements = document.getElementsByClassName(id + '_volume');
 		var descElements = document.getElementsByClassName(id + 'channel_desc');
@@ -203,9 +203,15 @@ var changeVolume = function(id, i, value)
 				document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[0].style.flex = bgFlexLower;
 				document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[1].style.flex = bgFlexUpper;
 			}
+			if (volumeElements[i].value == volumeElements[i].getAttribute('min')) {
+				volumeElements[i].className += ' is-lowest-value';
+			} else {
+				volumeElements[i].className = volumeElements[i].className.replace(/is-lowest-value/, '');
+			}
 		}
 	} else {
 		//console.log("Changed volume on channel " + i + " on control [id=" + id + "] to value: " + value);
+		document.getElementsByClassName(id + 'channel_desc')[0].innerHTML = Math.round(100 * value / document.getElementsByClassName(id + '_volume')[0].getAttribute('max'));
 	}
 	
 	var elements = document.getElementsByClassName(id + '_volume');

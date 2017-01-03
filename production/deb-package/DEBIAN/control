@@ -1,5 +1,5 @@
 Package: amixer-webui
-Version: 0.3.0
+Version: 0.3.1
 Maintainer: Jiri Skorpil <jiri.sko@gmail.com>
 Section: sound
 Architecture: all
