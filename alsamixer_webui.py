@@ -34,12 +34,16 @@ class Handler(Flask):
     card = None
     equal = False
 
+    PULSE_AUDIO_DEVICE_NUMBER = 99999
+
     def __init__(self, *args, **kwargs):
         Flask.__init__(self, *args, **kwargs)
 
     def __get_amixer_command__(self):
         command = ["amixer"]
-        if self.card is not None:
+        if self.card == self.PULSE_AUDIO_DEVICE_NUMBER:
+            command += ["-D", "pulse"]
+        elif self.card is not None:
             command += ["-c", "%d" % self.card]
         if self.equal is True:
             command += ["-D", "equal"]
@@ -76,6 +80,11 @@ class Handler(Flask):
             card_number = i.split(" [")[0].strip()
             card_detail = Popen(["amixer", "-c", card_number, "info"], stdout=PIPE).communicate()[0]
             cards[card_number] = self.__decode_string(card_detail).split("\n")[1].split(":")[1].replace("'", "").strip()
+
+        pulse = Popen(["amixer", "-D", "pulse", "info"], stdout=PIPE)
+        pulse.communicate()
+        if pulse.wait() == 0:
+            cards[self.PULSE_AUDIO_DEVICE_NUMBER] = "PulseAudio"
 
         return cards
 
