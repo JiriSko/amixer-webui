@@ -89,7 +89,7 @@
         <h3>
           <a id="for-debian-based-distributions" class="anchor" href="#for-debian-based-distributions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>For Debian based distributions:</h3>
 
-        <p>Install <a href="https://github.com/JiriSko/amixer-webui/releases/latest">latest</a> .deb package and then enable &amp; start amixer service:</p>
+        <p>Install <a href="https://github.com/JiriSko/amixer-webui/releases/latest">latest</a> .deb package and then enable &amp; start amixer-webui service:</p>
 
         <div class="highlight highlight-source-shell"><pre>sudo update-rc.d amixer-webui defaults
 sudo /etc/init.d/amixer-webui start</pre></div>
@@ -112,7 +112,7 @@ sudo /etc/init.d/amixer-webui start</pre></div>
 
         <p>Install app as root using <code>./openwrt.sh install</code> command and then enable &amp; start amixer-webui service:</p>
 
-        <div class="highlight highlight-source-shell"><pre>/etc/init.d/amixer-webui <span class="pl-c1">enable</span>
+        <div class="highlight highlight-source-shell"><pre>/etc/init.d/amixer-webui enable
 /etc/init.d/amixer-webui start</pre></div>
 
         <p>Script automatically restores ALSA settings after reboot.</p>
