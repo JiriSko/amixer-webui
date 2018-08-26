@@ -42,7 +42,7 @@ deb: package
 	touch ${BUILD_PATH}/DEBIAN/md5sums
 	cd ${BUILD_PATH} && find * ! -path "DEBIAN/*" -type f -exec md5sum {} \; >> DEBIAN/md5sums
 	sed "s/VERSION/${VERSION}/g" production/DEBIAN-control > ${BUILD_PATH}/DEBIAN/control
-	du -bsx --apparent-size --exclude ${BUILD_PATH}/DEBIAN ${BUILD_PATH} | awk '{ print "Installed-Size: " $$1 }' >> ${BUILD_PATH}/DEBIAN/control
+	du -sx --apparent-size --exclude ${BUILD_PATH}/DEBIAN ${BUILD_PATH} | awk '{ print "Installed-Size: " $$1 }' >> ${BUILD_PATH}/DEBIAN/control
 	fakeroot dpkg-deb -b production/deb-package production/amixer-webui_${VERSION}_all.deb
 
 .PHONY: clean
