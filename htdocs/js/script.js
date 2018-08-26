@@ -404,7 +404,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	{
 		loadCards();
 		loadControls();
-		loadEqualizer();
+		setTimeout(function() { loadEqualizer(); }, 150);
 		loadHostname();
 	});
 });
