@@ -19,7 +19,7 @@
 user= # user which will run the webserver (if not set will be used user who ran this script)
 path=/usr/share/amixer-webui
 
-startCommand="$path/alsamixer_webui.py"
+startCommand="./alsamixer_webui.py"
 
 pid="`ps ax | grep alsamixer_webui | grep -v grep | awk '{print $1}'`"
 
@@ -29,12 +29,11 @@ case "$1" in
     then
       echo "amixer-webui already running"
     else
-      cd $path
       if [ -z "$user" ]
       then
-        $startCommand >/dev/null 2>&1 &
+        cd $path && $startCommand >/dev/null 2>&1 &
       else
-        su $user - -c "$startCommand >/dev/null 2>&1 &"
+        su $user - -c "cd $path && $startCommand >/dev/null 2>&1 &"
       fi
       echo "amixer-webui started"
     fi
