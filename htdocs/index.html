@@ -2,11 +2,11 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	
-	<title>ALSA Mixer WebUI on {$hostname}</title>
-	
+
+	<title>ALSA Mixer WebUI</title>
+
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	
+
 	<link rel="stylesheet" href="css/material.teal-cyan.min.css" />
 	<link rel="stylesheet" href="css/material-icons.css">
 	<link rel="stylesheet" href="css/dialog-polyfill.css">
@@ -40,16 +40,16 @@
 </head>
 
 <body class="loading">
-	
+
 	<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-		
+
 		<div class="mdl-layout__header mdl-layout__header--waterfall">
 			<header class="mdl-layout__header-row">
 				<div class="mdl-layout-title">
 					<h1>
 						ALSA Mixer WebUI
 					</h1>
-					<div>{$hostname}</div>
+					<div class="hostname"></div>
 				</div>
 				<div class="mdl-layout-spacer"></div>
 			</header>
@@ -57,11 +57,11 @@
 				<div class="mdl-layout-spacer"></div>
 			</div>
 		</div>
-		
+
 		<main class="mdl-layout__content">
 			<div class="mdl-grid" id="controls"></div>
 		</main>
-	
+
 	</div>
 
 	<dialog class="mdl-dialog">
@@ -69,10 +69,10 @@
 		<div class="mdl-dialog__content"></div>
 		<div class="mdl-dialog__actions"></div>
 	</dialog>
-	
+
 	<div class="amixer-webui-spinner">
 		<div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active"></div>
 	</div>
-	
+
 </body>
 </html>

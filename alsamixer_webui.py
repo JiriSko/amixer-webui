@@ -186,10 +186,7 @@ app = Handler(__name__, static_folder='htdocs', static_url_path='')
 @app.route('/')
 def index():
     """Sends HTML file (GET /)"""
-    f = open("index.tpl")
-    html = f.read().replace("{$hostname}", socket.gethostname())
-    f.close()
-    return html
+    return app.send_static_file('index.html')
 
 
 @app.route('/hostname/')
@@ -333,7 +330,13 @@ def main():
     if args.port is None:
         args.port = DEFAULT_PORT
 
-    app.run(**vars(args))
+    try:
+        app.run(**vars(args))
+    except socket.error as e:
+        if e.errno == errno.EPIPE:
+            main()
+        else:
+            raise e
 
 if __name__ == "__main__":
 

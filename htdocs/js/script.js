@@ -6,7 +6,11 @@ var getJSON = function(url, successCallback, failCallback)
 	xhttp.onreadystatechange = function()
 	{
 		if (xhttp.readyState == 4 && xhttp.status == 200) {
-			successCallback(JSON.parse(xhttp.responseText));
+			try {
+				successCallback(JSON.parse(xhttp.responseText));
+			} catch (e) {
+				successCallback(xhttp.responseText);
+			}
 		} else if (xhttp.readyState == 4 && typeof failCallback !== "undefined") {
 			failCallback(xhttp.status);
 		}
@@ -83,6 +87,49 @@ var getControls = function(data)
 	return controls;
 };
 
+var __ = function(msg)
+{
+	return typeof localeStrings === 'object' && typeof localeStrings[msg] === 'string' ? localeStrings[msg] : msg;
+};
+
+var loadScript = function (url, callback)
+{
+	var scriptTag = document.createElement('script');
+	scriptTag.src = url;
+	scriptTag.onload = callback;
+	document.body.appendChild(scriptTag);
+};
+
+var loadLanguage = function (callback)
+{
+	if (!('language' in navigator) || navigator.language === 'en')
+	{
+		loadScript('js/i18n/en.js', callback);
+	}
+	else
+	{
+		var loaded = false;
+
+		setTimeout(function ()
+		{
+			if (!loaded)
+			{
+				loaded = true;
+				loadScript('js/i18n/en.js', callback);
+			}
+		}, 100);
+
+		loadScript('js/i18n/' + navigator.language + '.js', function ()
+		{
+			if (!loaded)
+			{
+				loaded = true;
+				callback();
+			}
+		});
+	}
+};
+
 var drawControls = function(controls)
 {
 	//console.log(controls);
@@ -111,7 +158,7 @@ var drawControls = function(controls)
 			html += '<div>';
 			
 			if (control.volume !== undefined && control.volume.values.length > 1) {
-				html += '<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="' + control.volume.id + '_lock"><input type="checkbox" id="' + control.volume.id + '_lock" class="mdl-checkbox__input" checked><span class="mdl-checkbox__label mdl-cell--hide-phone">Lock sliders</span></label>';
+				html += '<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="' + control.volume.id + '_lock"><input type="checkbox" id="' + control.volume.id + '_lock" class="mdl-checkbox__input" checked><span class="mdl-checkbox__label mdl-cell--hide-phone">' + __('lockSliders') + '</span></label>';
 			}
 			
 			html += "</div>";
@@ -251,13 +298,13 @@ var loadCards = function ()
 			return;
 		}
 
-		var select = '<div class="mdl-textfield mdl-js-textfield"><select class="amixer-webui-cards mdl-textfield__input" onchange="changeCard(this.value)"><optgroup label="Sound card" class="mdl-cell--hide-desktop"></optgroup>';
+		var select = '<div class="mdl-textfield mdl-js-textfield"><select class="amixer-webui-cards mdl-textfield__input" onchange="changeCard(this.value)"><optgroup label="' + __('soundDevice') + '" class="mdl-cell--hide-desktop"></optgroup>';
 		for (var i in data) {
 			select += '<option value="' + i + '">' + data[i] + '</option>';
 		}
 		select += '</select></div>';
 
-		document.getElementsByClassName('mdl-layout__header-row')[0].innerHTML += '<div class="mdl-cell--hide-phone"><span class="amixer-webui-sound-card__label mdl-cell--hide-tablet">Sound card:</span> ' + select + '</div>';
+		document.getElementsByClassName('mdl-layout__header-row')[0].innerHTML += '<div class="mdl-cell--hide-phone"><span class="amixer-webui-sound-card__label mdl-cell--hide-tablet">' + __('soundDevice') + ':</span> ' + select + '</div>';
 		document.getElementsByClassName('mdl-layout__header-row')[1].innerHTML += select;
 
 		getJSON('card/?' + Date.now(), function(id)
@@ -280,9 +327,9 @@ var loadEqualizer = function ()
 		if (data && data.length)
 		{
 			var header = document.querySelectorAll('.mdl-layout__header .mdl-layout-spacer');
-			header[0].outerHTML += '<button class="' + (header.length === 2 ? 'mdl-cell--hide-phone ' : '') + 'mdl-button mdl-js-button mdl-button--icon" title="Equalizer" onclick="document.querySelector(\'dialog\').showModal()"><i class="material-icons">equalizer</i></button>';
+			header[0].outerHTML += '<button class="' + (header.length === 2 ? 'mdl-cell--hide-phone ' : '') + 'mdl-button mdl-js-button mdl-button--icon" title="' + __('equalizer') + '" onclick="document.querySelector(\'dialog\').showModal()"><i class="material-icons">equalizer</i></button>';
 			if (header.length === 2) {
-				header[1].outerHTML += '<button class="mdl-button mdl-js-button mdl-button--icon" title="Equalizer" onclick="document.querySelector(\'dialog\').showModal()"><i class="material-icons">equalizer</i></button>';
+				header[1].outerHTML += '<button class="mdl-button mdl-js-button mdl-button--icon" title="' + __('equalizer') + '" onclick="document.querySelector(\'dialog\').showModal()"><i class="material-icons">equalizer</i></button>';
 			}
 
 			showEqualizer(data);
@@ -315,9 +362,9 @@ var showEqualizer = function (data)
 
 	html += '</div></div>';
 
-	document.querySelector('.mdl-dialog__title').innerHTML = 'Equalizer';
+	document.querySelector('.mdl-dialog__title').innerHTML = __('equalizer');
 	document.querySelector('.mdl-dialog__content').innerHTML = html;
-	document.querySelector('.mdl-dialog__actions').innerHTML = '<button type="button" class="mdl-button mdl-js-button mdl-button--primary close">Close</button><label class="amixer-webui-equalizer__lock mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="equalizer_lock"><input type="checkbox" id="equalizer_lock" class="mdl-checkbox__input" checked><span class="mdl-checkbox__label">Lock sliders</span></label>';
+	document.querySelector('.mdl-dialog__actions').innerHTML = '<button type="button" class="mdl-button mdl-js-button mdl-button--primary close">' + __('close') + '</button><label class="amixer-webui-equalizer__lock mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="equalizer_lock"><input type="checkbox" id="equalizer_lock" class="mdl-checkbox__input" checked><span class="mdl-checkbox__label">' + __('lockSliders') + '</span></label>';
 	document.querySelector('.mdl-dialog__actions .close').addEventListener('click', function() {
 		document.querySelector('dialog').close();
 	});
@@ -342,9 +389,22 @@ var loadControls = function()
 	});
 };
 
+var loadHostname = function ()
+{
+	getJSON('hostname/', function (hostname)
+	{
+		document.querySelector('.hostname').textContent = hostname;
+		document.title += ' ' + __('on') + ' ' + hostname;
+	});
+};
+
 document.addEventListener("DOMContentLoaded", function(event)
 {
-	loadCards();
-	loadControls();
-	loadEqualizer();
+	loadLanguage(function ()
+	{
+		loadCards();
+		loadControls();
+		loadEqualizer();
+		loadHostname();
+	});
 });
