@@ -1,0 +1,11 @@
+[Unit]
+Description=ALSA Mixer WebUIDaemon
+After=network-online.target
+ 
+[Service]
+Type=simple
+WorkingDirectory=/usr/share/amixer-webui
+ExecStart=/usr/share/amixer-webui/alsamixer_webui.py
+ 
+[Install]
+WantedBy=multi-user.target

@@ -5,7 +5,7 @@
 # Desc.:   Makefile for ALSA Mixer WebUI
 #
 
-INSTALL_PATH=/usr/share/amixer-webui
+INSTALL_PATH ?= /usr/share/amixer-webui
 BUILD_PATH=production/deb-package
 
 VERSION := $(shell git describe --tags | cut -c2- > .version && cat .version)
