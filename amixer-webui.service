@@ -1,11 +1,18 @@
 [Unit]
-Description=ALSA Mixer WebUIDaemon
+Description=ALSA Mixer WebUI service
+After=audio.target
 After=network-online.target
- 
+
 [Service]
 Type=simple
 WorkingDirectory=/usr/share/amixer-webui
 ExecStart=/usr/share/amixer-webui/alsamixer_webui.py
- 
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=always
+RestartSec=10
+StartLimitInterval=30
+StartLimitBurst=20
+
 [Install]
 WantedBy=multi-user.target
