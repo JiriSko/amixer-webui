@@ -65,6 +65,12 @@ make install
 
 And then enable and start amixer-webui service.
 
+### Build Debian
+
+```
+make deb
+```
+
 ----------
 
 Alternatively it can be run from anywhere e.g. in background from `rc.local`.
