@@ -65,11 +65,12 @@ make install
 
 And then enable and start amixer-webui service.
 
-### Build Debian
+### Build Debian Package
 
 ```
-make deb
+dpkg-buildpackage
 ```
+included the configuration for systemd-services
 
 ----------
 
