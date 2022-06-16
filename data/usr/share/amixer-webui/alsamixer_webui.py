@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # File:    alsamixer_webui.py
@@ -24,7 +24,7 @@ except ImportError:
     import configparser as ConfigParser
 
 
-CONFIG_FILE = '/etc/amixer-webui.conf'
+CONFIG_FILE = '/etc/amixer-webui/amixer-webui.conf'
 DEFAULT_HOST = '0.0.0.0'
 DEFAULT_PORT = '8080'
 
@@ -180,7 +180,7 @@ def is_digit(n):
         return False
 
 
-app = Handler(__name__, static_folder='htdocs', static_url_path='')
+app = Handler(__name__, static_folder='web', static_url_path='')
 
 
 @app.route('/')

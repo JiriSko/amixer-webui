@@ -184,7 +184,7 @@ var drawControls = function(controls)
 						html += '<span class="channelDescription">' + control.volume.channels[i] + '</span>';
 					}
 					html += '<input type="range" min="' + control.volume.min + '" max="' + control.volume.max + '" stype="' + control.volume.step + '" value="' + control.volume.values[i] + '" onchange="changeVolume(' + control.volume.id + ', ' + i + ', this.value)" class="' + control.volume.id + '_volume mdl-slider mdl-js-slider">';
-					html += '<span id="' + control.volume.id + '_channel_desc_' + i + '" class="value ' + control.volume.id + 'channel_desc' + '">' + Math.round(100 * control.volume.values[i] / control.volume.max) + '</span>&nbsp;%';
+					html += '<span id="' + control.volume.id + '_channel_desc_' + i + '" class="value ' + control.volume.id + 'channel_desc' + '">' + (control.volume.values[i] / 100) + '</span>&nbsp;dB';
 					html += '</div>';
 				}
 			}
@@ -244,7 +244,7 @@ var changeVolume = function(id, i, value)
 		for (var i = 0; i < volumeElements.length; i++) {
 			volumeElements[i].value = value;
 			if (descElements.length > 0) {
-				descElements[i].innerHTML = Math.round(100 * value / volumeElements[i].getAttribute('max'));
+				descElements[i].innerHTML = (volumeElements[i].getAttribute('max') / 100);
 			}
 			if (isBgFlexPresent) {
 				document.getElementsByClassName(id + '_volume')[i].parentNode.childNodes[1].childNodes[0].style.flex = bgFlexLower;
@@ -258,7 +258,7 @@ var changeVolume = function(id, i, value)
 		}
 	} else {
 		//console.log("Changed volume on channel " + i + " on control [id=" + id + "] to value: " + value);
-		document.getElementsByClassName(id + 'channel_desc')[0].innerHTML = Math.round(100 * value / document.getElementsByClassName(id + '_volume')[0].getAttribute('max'));
+		document.getElementsByClassName(id + 'channel_desc')[0].innerHTML = (value / 100);
 	}
 	
 	var elements = document.getElementsByClassName(id + '_volume');
