@@ -192,7 +192,9 @@ def index():
 @app.route('/hostname/')
 def get_hostname():
     """Sends server's hostname [plain text:String]"""
-    return socket.gethostname()
+    data = json.dumps(socket.gethostname())
+    resp = Response(response=data, status=200, mimetype="application/json")
+    return resp
 
 
 @app.route('/cards/')
